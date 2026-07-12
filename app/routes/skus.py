@@ -1,5 +1,5 @@
 """CRUD SKU + batch-расчёт юнит-экономики."""
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.deps import get_workspace_for_user
@@ -106,6 +106,66 @@ def delete_all_skus(
 ):
     db.query(Sku).filter_by(workspace_id=ws.id).delete()
     db.commit()
+
+
+@router.post("/import-costs")
+async def import_costs_xlsx(
+    file: UploadFile = File(...),
+    ws: Workspace = Depends(get_workspace_for_user),
+    db: Session = Depends(get_db),
+):
+    """Импорт себестоимости из xlsx (выгрузка Ya.Market с заполненной колонкой W «Себестоимость»).
+    Ищет SKU в колонке D (Ваш SKU), берёт cost из колонки W. Обновляет только те SKU, у которых
+    cost > 0 в файле; уже заполненная себестоимость перезаписывается новой (если она > 0)."""
+    import openpyxl, io
+    content = await file.read()
+    try:
+        wb = openpyxl.load_workbook(io.BytesIO(content), data_only=True, read_only=True)
+    except Exception as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, f"Не удалось открыть xlsx: {e}")
+
+    # Ищем лист «Список товаров», иначе первый
+    ws_name = "Список товаров" if "Список товаров" in wb.sheetnames else wb.sheetnames[0]
+    sheet = wb[ws_name]
+
+    # Строим индекс существующих SKU
+    all_skus = db.query(Sku).filter_by(workspace_id=ws.id).all()
+    by_sku = {s.sku: s for s in all_skus}
+
+    updated = 0
+    matched = 0
+    scanned = 0
+    file_rows_with_cost = 0
+    # Данные начинаются с 4-й строки в выгрузке Маркета (r1-r3 — шапки)
+    for row_idx, row in enumerate(sheet.iter_rows(min_row=4, values_only=True), start=4):
+        if not row: continue
+        # D = index 3, W = index 22 (нумерация с 0)
+        sku_val = row[3] if len(row) > 3 else None
+        cost_val = row[22] if len(row) > 22 else None
+        if sku_val is None: continue
+        scanned += 1
+        sku_key = str(sku_val).strip()
+        if not sku_key: continue
+        try:
+            cost = float(cost_val) if cost_val not in (None, "") else 0.0
+        except (ValueError, TypeError):
+            cost = 0.0
+        if cost > 0: file_rows_with_cost += 1
+        if sku_key in by_sku:
+            matched += 1
+            if cost > 0 and float(by_sku[sku_key].cost_rub or 0) != cost:
+                by_sku[sku_key].cost_rub = cost
+                updated += 1
+
+    db.commit()
+    return {
+        "sheet_used": ws_name,
+        "rows_scanned": scanned,
+        "rows_with_cost_in_file": file_rows_with_cost,
+        "matched_by_sku": matched,
+        "updated_cost_rub": updated,
+        "total_skus_in_db": len(all_skus),
+    }
 
 
 @router.post("/calc")
