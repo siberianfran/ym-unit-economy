@@ -7,15 +7,11 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script>
-tailwind.config = {
-  theme: { extend: {
-    colors: { brand: {50:'#FEF2F2',100:'#FDE7E7',500:'#C1121F',600:'#A00E19'} },
-  } }
-}
+tailwind.config = {theme:{extend:{colors:{brand:{50:'#FEF2F2',100:'#FDE7E7',500:'#C1121F',600:'#A00E19'}}}}}
 </script>
 <style>
   [x-cloak]{display:none!important}
-  body{background:linear-gradient(180deg,#FAFAF9 0%,#F5F1EC 100%);min-height:100vh;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+  body{background:linear-gradient(180deg,#FAFAF9 0%,#F5F1EC 100%);min-height:100vh;font-family:system-ui,sans-serif}
   .btn-primary{@apply bg-brand-500 hover:bg-brand-600 text-white font-medium px-4 py-2 rounded-lg transition shadow-sm}
   .btn-secondary{@apply bg-white hover:bg-slate-50 text-slate-700 font-medium px-4 py-2 rounded-lg border border-slate-200 transition}
   .input{@apply w-full border border-slate-200 rounded-lg px-3 py-2 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 outline-none}
@@ -23,69 +19,37 @@ tailwind.config = {
 </head>
 <body class="text-slate-800" x-data="app()" x-init="init()" x-cloak>
 
-<!-- Экран логина/регистрации -->
 <div x-show="!token" class="min-h-screen flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full">
     <div class="flex items-center gap-3 mb-6">
       <div class="w-10 h-10 rounded-xl bg-brand-500 text-white flex items-center justify-center font-bold">Я</div>
-      <div>
-        <div class="font-bold text-lg text-slate-900">Юнит-экономика</div>
-        <div class="text-sm text-slate-500">Я.Маркет</div>
-      </div>
+      <div><div class="font-bold text-lg text-slate-900">Юнит-экономика</div><div class="text-sm text-slate-500">Я.Маркет</div></div>
     </div>
-
     <div class="flex gap-2 mb-4 border-b border-slate-100">
       <button @click="authMode='login'" :class="authMode==='login'?'text-brand-500 border-b-2 border-brand-500 -mb-px':'text-slate-500'" class="px-3 py-2 text-sm font-medium">Вход</button>
       <button @click="authMode='register'" :class="authMode==='register'?'text-brand-500 border-b-2 border-brand-500 -mb-px':'text-slate-500'" class="px-3 py-2 text-sm font-medium">Регистрация</button>
     </div>
-
     <div class="space-y-3">
-      <div>
-        <label class="text-sm text-slate-600 block mb-1">Email</label>
-        <input type="email" x-model="authForm.email" class="input" placeholder="you@example.com">
-      </div>
-      <div>
-        <label class="text-sm text-slate-600 block mb-1">Пароль</label>
-        <input type="password" x-model="authForm.password" class="input" placeholder="от 8 символов">
-      </div>
-      <template x-if="authMode==='register'">
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">Имя</label>
-          <input type="text" x-model="authForm.name" class="input" placeholder="Виталий">
-        </div>
-      </template>
-      <template x-if="authMode==='register'">
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">Название магазина</label>
-          <input type="text" x-model="authForm.workspace_name" class="input" placeholder="Дом столов">
-        </div>
-      </template>
+      <div><label class="text-sm text-slate-600 block mb-1">Email</label><input type="email" x-model="authForm.email" class="input" placeholder="you@example.com"></div>
+      <div><label class="text-sm text-slate-600 block mb-1">Пароль</label><input type="password" x-model="authForm.password" class="input" placeholder="от 8 символов"></div>
+      <template x-if="authMode==='register'"><div><label class="text-sm text-slate-600 block mb-1">Имя</label><input type="text" x-model="authForm.name" class="input"></div></template>
+      <template x-if="authMode==='register'"><div><label class="text-sm text-slate-600 block mb-1">Название магазина</label><input type="text" x-model="authForm.workspace_name" class="input"></div></template>
       <div x-show="authError" class="text-sm text-rose-600 py-2" x-text="authError"></div>
-      <button @click="doAuth()" class="btn-primary w-full">
-        <span x-text="authMode==='login' ? 'Войти' : 'Создать аккаунт'"></span>
-      </button>
+      <button @click="doAuth()" class="btn-primary w-full"><span x-text="authMode==='login' ? 'Войти' : 'Создать аккаунт'"></span></button>
     </div>
   </div>
 </div>
 
-<!-- Основное приложение (после логина) -->
 <div x-show="token">
-  <!-- Шапка -->
   <header class="bg-white border-b border-slate-200 sticky top-0 z-30">
     <div class="max-w-[1600px] mx-auto px-6 py-3 flex items-center gap-4">
       <div class="flex items-center gap-3">
         <div class="w-9 h-9 rounded-xl bg-brand-500 text-white flex items-center justify-center font-bold text-sm">Я</div>
-        <div>
-          <div class="font-semibold text-slate-900 text-sm">Юнит-экономика · Я.Маркет</div>
-          <div class="text-xs text-slate-500" x-text="me?.email"></div>
-        </div>
+        <div><div class="font-semibold text-slate-900 text-sm">Юнит-экономика · Я.Маркет</div><div class="text-xs text-slate-500" x-text="me?.email"></div></div>
       </div>
       <div class="flex-1"></div>
-      <!-- Селектор workspace -->
       <select x-model.number="currentWs" @change="loadWorkspaceData()" class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-brand-500">
-        <template x-for="ws in workspaces" :key="ws.id">
-          <option :value="ws.id" x-text="ws.name + ' (' + ws.role + ')'"></option>
-        </template>
+        <template x-for="ws in workspaces" :key="ws.id"><option :value="ws.id" x-text="ws.name + ' (' + ws.role + ')'"></option></template>
       </select>
       <button @click="showNewWs=true" class="btn-secondary text-sm">+ магазин</button>
       <button @click="showSettings=true" class="btn-secondary text-sm">Настройки</button>
@@ -95,45 +59,35 @@ tailwind.config = {
   </header>
 
   <main class="max-w-[1600px] mx-auto px-6 py-6">
-    <!-- KPI -->
     <section class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div class="text-xs uppercase text-slate-500 mb-1">Всего SKU</div>
-        <div class="text-3xl font-bold" x-text="summary.total_sku || 0"></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div class="text-xs uppercase text-slate-500 mb-1">Прибыльных ≥15%</div>
-        <div class="text-3xl font-bold text-emerald-600" x-text="summary.profitable_15plus || 0"></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div class="text-xs uppercase text-slate-500 mb-1">На грани 5–15%</div>
-        <div class="text-3xl font-bold text-amber-600" x-text="summary.profitable_5_15 || 0"></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div class="text-xs uppercase text-slate-500 mb-1">Убыточных</div>
-        <div class="text-3xl font-bold text-rose-600" x-text="summary.losing || 0"></div>
-      </div>
-      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div class="text-xs uppercase text-slate-500 mb-1">Средняя маржа</div>
-        <div class="text-3xl font-bold" :class="(summary.avg_margin_pct||0)>=15?'text-emerald-600':(summary.avg_margin_pct||0)>=5?'text-amber-600':'text-rose-600'" x-text="(summary.avg_margin_pct||0)+'%'"></div>
-      </div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm"><div class="text-xs uppercase text-slate-500 mb-1">Всего SKU</div><div class="text-3xl font-bold" x-text="summary.total_sku || 0"></div></div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm"><div class="text-xs uppercase text-slate-500 mb-1">Прибыльных ≥15%</div><div class="text-3xl font-bold text-emerald-600" x-text="summary.profitable_15plus || 0"></div></div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm"><div class="text-xs uppercase text-slate-500 mb-1">На грани 5–15%</div><div class="text-3xl font-bold text-amber-600" x-text="summary.profitable_5_15 || 0"></div></div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm"><div class="text-xs uppercase text-slate-500 mb-1">Убыточных</div><div class="text-3xl font-bold text-rose-600" x-text="summary.losing || 0"></div></div>
+      <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm"><div class="text-xs uppercase text-slate-500 mb-1">Средняя маржа</div><div class="text-3xl font-bold" :class="(summary.avg_margin_pct||0)>=15?'text-emerald-600':(summary.avg_margin_pct||0)>=5?'text-amber-600':'text-rose-600'" x-text="(summary.avg_margin_pct||0)+'%'"></div></div>
     </section>
 
-    <!-- Панель действий -->
     <section class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-6 flex flex-wrap items-center gap-3">
-      <button @click="importFromYaMarket()" :disabled="importing" class="btn-primary text-sm disabled:opacity-50">
-        <span x-show="!importing">📥 Импорт из Ya.Market</span>
-        <span x-show="importing">Загрузка...</span>
-      </button>
+      <button @click="importFromYaMarket()" :disabled="importing" class="btn-primary text-sm disabled:opacity-50"><span x-show="!importing">📥 Импорт из Ya.Market</span><span x-show="importing">Загрузка...</span></button>
       <button @click="syncPricesFromYaMarket()" :disabled="importing" class="btn-secondary text-sm">💰 Синхронизация цен</button>
+      <button @click="syncStocksFromYaMarket()" :disabled="syncingStocks" class="btn-secondary text-sm"><span x-show="!syncingStocks">📦 Синхронизация остатков</span><span x-show="syncingStocks">Загрузка...</span></button>
       <button @click="addRow()" class="btn-secondary text-sm">+ SKU вручную</button>
       <div class="flex-1"></div>
-      <div class="text-sm text-slate-500">
-        Отфильтровать: <input type="text" x-model="filter" placeholder="по SKU или названию" class="ml-1 border border-slate-200 rounded px-2 py-1 text-xs w-52">
-      </div>
+      <div class="text-sm text-slate-500">Отфильтровать: <input type="text" x-model="filter" placeholder="по SKU или названию" class="ml-1 border border-slate-200 rounded px-2 py-1 text-xs w-52"></div>
     </section>
 
-    <!-- Таблица SKU -->
+    <section class="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm mb-6 flex flex-wrap items-center gap-6">
+      <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="onlyWithCost" class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500">
+        Только с заполненной себестоимостью
+      </label>
+      <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+        <input type="checkbox" x-model="onlyInStock" class="w-4 h-4 rounded border-slate-300 text-brand-500 focus:ring-brand-500">
+        Только в наличии (FBW + FBO + FBS)
+      </label>
+      <div class="text-xs text-slate-400 ml-auto">Показано: <span x-text="filteredResults.length"></span> из <span x-text="results.length"></span></div>
+    </section>
+
     <section class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
       <div class="overflow-x-auto max-h-[65vh]">
         <table class="w-full text-sm">
@@ -149,6 +103,7 @@ tailwind.config = {
               <th class="px-3 py-2 text-right w-16">Вес</th>
               <th class="px-3 py-2 text-right w-24">Цена</th>
               <th class="px-3 py-2 text-right w-24">Себест.</th>
+              <th class="px-3 py-2 text-right w-16">Остаток</th>
               <th class="px-3 py-2 text-right w-24 bg-slate-100">Прибыль</th>
               <th class="px-3 py-2 text-center w-20 bg-slate-100">Маржа</th>
               <th class="px-3 py-2 w-8"></th>
@@ -159,37 +114,21 @@ tailwind.config = {
               <tr class="hover:bg-slate-50/50">
                 <td class="px-2 py-1"><input type="text" x-model="row.sku" @change="saveRow(row)" class="w-full px-2 py-1 text-xs"></td>
                 <td class="px-2 py-1"><input type="text" x-model="row.name" @change="saveRow(row)" class="w-full px-2 py-1 text-xs"></td>
-                <td class="px-2 py-1">
-                  <select x-model="row.category" @change="saveRow(row)" class="w-full px-1 py-1 text-xs">
-                    <template x-for="c in categories"><option :value="c.name" x-text="c.name"></option></template>
-                  </select>
-                </td>
-                <td class="px-2 py-1">
-                  <select x-model="row.model" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-center">
-                    <option value="FBY">FBY</option><option value="FBS">FBS</option>
-                  </select>
-                </td>
+                <td class="px-2 py-1"><select x-model="row.category" @change="saveRow(row)" class="w-full px-1 py-1 text-xs"><template x-for="c in categories"><option :value="c.name" x-text="c.name"></option></template></select></td>
+                <td class="px-2 py-1"><select x-model="row.model" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-center"><option value="FBY">FBY</option><option value="FBS">FBS</option></select></td>
                 <td class="px-1 py-1"><input type="number" x-model.number="row.length_cm" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-right"></td>
                 <td class="px-1 py-1"><input type="number" x-model.number="row.width_cm" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-right"></td>
                 <td class="px-1 py-1"><input type="number" x-model.number="row.height_cm" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-right"></td>
                 <td class="px-1 py-1"><input type="number" step="0.1" x-model.number="row.weight_kg" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-right"></td>
                 <td class="px-1 py-1"><input type="number" x-model.number="row.price_rub" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-right"></td>
                 <td class="px-1 py-1"><input type="number" x-model.number="row.cost_rub" @change="saveRow(row)" class="w-full px-1 py-1 text-xs text-right"></td>
+                <td class="px-1 py-1"><input type="number" x-model.number="row.stock_total" @change="saveRow(row)" :class="(+row.stock_total)>0?'text-emerald-700 font-semibold':'text-slate-300'" class="w-full px-1 py-1 text-xs text-right"></td>
                 <td class="px-2 py-1 text-right text-xs font-medium bg-slate-50/50" :class="row.profit_rub<0?'text-rose-600':'text-slate-700'" x-text="fmtRub(row.profit_rub)"></td>
-                <td class="px-2 py-1 text-center bg-slate-50/50">
-                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold border" :class="marginColor(row.margin_pct)" x-text="fmtPct(row.margin_pct)"></span>
-                </td>
-                <td class="px-1 py-1 text-center">
-                  <button @click="deleteRow(row)" class="text-slate-300 hover:text-rose-500 text-xs">✕</button>
-                </td>
+                <td class="px-2 py-1 text-center bg-slate-50/50"><span class="inline-block px-2 py-0.5 rounded-full text-xs font-semibold border" :class="marginColor(row.margin_pct)" x-text="fmtPct(row.margin_pct)"></span></td>
+                <td class="px-1 py-1 text-center"><button @click="deleteRow(row)" class="text-slate-300 hover:text-rose-500 text-xs">✕</button></td>
               </tr>
             </template>
-            <tr x-show="filteredResults.length===0">
-              <td colspan="13" class="px-6 py-12 text-center text-slate-400">
-                <div>Пусто</div>
-                <div class="text-xs mt-1">Импортируй из Ya.Market или добавь SKU вручную</div>
-              </td>
-            </tr>
+            <tr x-show="filteredResults.length===0"><td colspan="14" class="px-6 py-12 text-center text-slate-400"><div>Пусто</div><div class="text-xs mt-1">Импортируй из Ya.Market, синхронизируй остатки или добавь SKU вручную</div></td></tr>
           </tbody>
         </table>
       </div>
@@ -197,108 +136,48 @@ tailwind.config = {
   </main>
 </div>
 
-<!-- Модалка «Настройки» -->
 <div x-show="showSettings" class="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-40 p-4" @click.self="showSettings=false" x-cloak>
   <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold">Настройки магазина</h2>
-      <button @click="showSettings=false" class="text-slate-400 hover:text-slate-700">✕</button>
-    </div>
+    <div class="flex items-center justify-between mb-4"><h2 class="text-xl font-bold">Настройки магазина</h2><button @click="showSettings=false" class="text-slate-400 hover:text-slate-700">✕</button></div>
     <div class="space-y-3">
-      <div>
-        <label class="text-sm text-slate-600 block mb-1">Система налогообложения</label>
-        <select x-model="storeSettings.tax_system" @change="saveSettings('tax_system',storeSettings.tax_system)" class="input">
-          <template x-for="(rate,name) in taxSystems"><option :value="name" x-text="`${name} (${(rate*100).toFixed(2)}%)`"></option></template>
-        </select>
-      </div>
-      <div>
-        <label class="text-sm text-slate-600 block mb-1">Частота выплат (эквайринг)</label>
-        <select x-model="storeSettings.payment_frequency" @change="saveSettings('payment_frequency',storeSettings.payment_frequency)" class="input">
-          <template x-for="(rate,name) in acquiringOptions"><option :value="name" x-text="`${name}${rate!==null?` (${(rate*100).toFixed(2)}%)`:''}`"></option></template>
-        </select>
-      </div>
+      <div><label class="text-sm text-slate-600 block mb-1">Система налогообложения</label><select x-model="storeSettings.tax_system" @change="saveSettings('tax_system',storeSettings.tax_system)" class="input"><template x-for="(rate,name) in taxSystems"><option :value="name" x-text="name + ' (' + (rate*100).toFixed(2) + '%)'"></option></template></select></div>
+      <div><label class="text-sm text-slate-600 block mb-1">Частота выплат (эквайринг)</label><select x-model="storeSettings.payment_frequency" @change="saveSettings('payment_frequency',storeSettings.payment_frequency)" class="input"><template x-for="(rate,name) in acquiringOptions"><option :value="name" x-text="name + (rate!==null ? ' (' + (rate*100).toFixed(2) + '%)' : '')"></option></template></select></div>
       <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">Ставка эквайринга, %</label>
-          <input type="number" step="0.1" :value="(storeSettings.acquiring_rate*100).toFixed(2)" @change="saveSettings('acquiring_rate',$event.target.value/100)" class="input">
-        </div>
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">ДРР по умолч., %</label>
-          <input type="number" step="0.5" :value="(storeSettings.default_drr_pct*100).toFixed(2)" @change="saveSettings('default_drr_pct',$event.target.value/100)" class="input">
-        </div>
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">% возвратов</label>
-          <input type="number" step="0.5" :value="(storeSettings.return_pct*100).toFixed(2)" @change="saveSettings('return_pct',$event.target.value/100)" class="input">
-        </div>
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">Стоимость возврата, ₽</label>
-          <input type="number" :value="storeSettings.return_cost_rub" @change="saveSettings('return_cost_rub',+$event.target.value)" class="input">
-        </div>
+        <div><label class="text-sm text-slate-600 block mb-1">Ставка эквайринга, %</label><input type="number" step="0.1" :value="(storeSettings.acquiring_rate*100).toFixed(2)" @change="saveSettings('acquiring_rate',$event.target.value/100)" class="input"></div>
+        <div><label class="text-sm text-slate-600 block mb-1">ДРР по умолч., %</label><input type="number" step="0.5" :value="(storeSettings.default_drr_pct*100).toFixed(2)" @change="saveSettings('default_drr_pct',$event.target.value/100)" class="input"></div>
+        <div><label class="text-sm text-slate-600 block mb-1">% возвратов</label><input type="number" step="0.5" :value="(storeSettings.return_pct*100).toFixed(2)" @change="saveSettings('return_pct',$event.target.value/100)" class="input"></div>
+        <div><label class="text-sm text-slate-600 block mb-1">Стоимость возврата, ₽</label><input type="number" :value="storeSettings.return_cost_rub" @change="saveSettings('return_cost_rub',+$event.target.value)" class="input"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- Модалка «Ya.Market API» -->
 <div x-show="showYaMarket" class="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-40 p-4" @click.self="showYaMarket=false" x-cloak>
   <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold">Подключение Ya.Market API</h2>
-      <button @click="showYaMarket=false" class="text-slate-400 hover:text-slate-700">✕</button>
-    </div>
-    <template x-if="mpAccounts.length>0">
-      <div class="mb-4 space-y-2">
-        <div class="text-sm text-slate-500">Подключённые аккаунты:</div>
-        <template x-for="a in mpAccounts">
-          <div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
-            <div class="text-sm"><span x-text="a.label||'Без метки'"></span> · business_id: <span x-text="a.business_id"></span></div>
-            <button @click="deleteMpAccount(a.id)" class="text-slate-400 hover:text-rose-500 text-xs">✕</button>
-          </div>
-        </template>
-      </div>
-    </template>
+    <div class="flex items-center justify-between mb-4"><h2 class="text-xl font-bold">Подключение Ya.Market API</h2><button @click="showYaMarket=false" class="text-slate-400 hover:text-slate-700">✕</button></div>
+    <template x-if="mpAccounts.length>0"><div class="mb-4 space-y-2"><div class="text-sm text-slate-500">Подключённые аккаунты:</div><template x-for="a in mpAccounts"><div class="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2"><div class="text-sm"><span x-text="a.label||'Без метки'"></span> · business_id: <span x-text="a.business_id"></span></div><button @click="deleteMpAccount(a.id)" class="text-slate-400 hover:text-rose-500 text-xs">✕</button></div></template></div></template>
     <div class="space-y-3">
-      <div>
-        <label class="text-sm text-slate-600 block mb-1">OAuth-токен (Ya.Market Partner API)</label>
-        <input type="text" x-model="mpForm.api_token" class="input" placeholder="AQAAAA...">
-        <div class="text-xs text-slate-500 mt-1">Получить: <a href="https://oauth.yandex.ru/" target="_blank" class="text-brand-500 underline">oauth.yandex.ru</a> — скоуп market:partner</div>
-      </div>
+      <div><label class="text-sm text-slate-600 block mb-1">Api-Key (Ya.Market Partner API)</label><input type="text" x-model="mpForm.api_token" class="input" placeholder="ACMA:xxxxx:xxxxx"><div class="text-xs text-slate-500 mt-1">Получить: <a href="https://partner.market.yandex.ru/" target="_blank" class="text-brand-500 underline">кабинет партнёра</a> → Настройки API</div></div>
       <div class="grid grid-cols-2 gap-3">
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">business_id</label>
-          <input type="number" x-model.number="mpForm.business_id" class="input">
-        </div>
-        <div>
-          <label class="text-sm text-slate-600 block mb-1">campaign_id</label>
-          <input type="number" x-model.number="mpForm.campaign_id" class="input">
-        </div>
+        <div><label class="text-sm text-slate-600 block mb-1">business_id</label><input type="number" x-model.number="mpForm.business_id" class="input"></div>
+        <div><label class="text-sm text-slate-600 block mb-1">campaign_id</label><input type="number" x-model.number="mpForm.campaign_id" class="input"></div>
       </div>
-      <div>
-        <label class="text-sm text-slate-600 block mb-1">Метка (для удобства)</label>
-        <input type="text" x-model="mpForm.label" class="input" placeholder="Основной кабинет">
-      </div>
+      <div><label class="text-sm text-slate-600 block mb-1">Метка (для удобства)</label><input type="text" x-model="mpForm.label" class="input" placeholder="Основной кабинет"></div>
       <button @click="saveMpAccount()" class="btn-primary w-full">Подключить</button>
     </div>
   </div>
 </div>
 
-<!-- Модалка "Новый магазин" -->
 <div x-show="showNewWs" class="fixed inset-0 bg-slate-900/40 flex items-center justify-center z-40 p-4" @click.self="showNewWs=false" x-cloak>
   <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-bold">Новый магазин</h2>
-      <button @click="showNewWs=false" class="text-slate-400 hover:text-slate-700">✕</button>
-    </div>
+    <div class="flex items-center justify-between mb-4"><h2 class="text-xl font-bold">Новый магазин</h2><button @click="showNewWs=false" class="text-slate-400 hover:text-slate-700">✕</button></div>
     <input type="text" x-model="newWsName" class="input mb-3" placeholder="Название магазина">
     <button @click="createWorkspace()" class="btn-primary w-full">Создать</button>
   </div>
 </div>
 
-<!-- Toast -->
-<div x-show="toast.text" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50" x-cloak>
-  <div class="text-sm" x-text="toast.text"></div>
-</div>
+<div x-show="toast.text" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50" x-cloak><div class="text-sm" x-text="toast.text"></div></div>
 
-<script src="/static/app.js?v=1"></script>
+<script src="/static/app.js?v=3"></script>
 </body>
 </html>
