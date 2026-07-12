@@ -27,7 +27,6 @@ def _store_settings_dict(db: Session, workspace_id: int) -> dict:
     }
 
 
-# ------ CRUD ------
 @router.get("", response_model=list[SkuResponse])
 def list_skus(
     ws: Workspace = Depends(get_workspace_for_user),
@@ -79,14 +78,12 @@ def delete_sku(
     db.delete(s); db.commit()
 
 
-# ------ Batch bulk ------
 @router.post("/bulk-upsert")
 def bulk_upsert(
     items: list[SkuCreate],
     ws: Workspace = Depends(get_workspace_for_user),
     db: Session = Depends(get_db),
 ):
-    """Массовая вставка/обновление SKU (для импорта из Ya.Market или xlsx)."""
     created = updated = 0
     for it in items:
         existing = db.query(Sku).filter_by(workspace_id=ws.id, sku=it.sku).first()
@@ -107,19 +104,16 @@ def delete_all_skus(
     ws: Workspace = Depends(get_workspace_for_user),
     db: Session = Depends(get_db),
 ):
-    """Удалить все SKU в workspace."""
     db.query(Sku).filter_by(workspace_id=ws.id).delete()
     db.commit()
 
 
-# ------ Calc ------
 @router.post("/calc")
 def calc_batch(
     req: CalcRequest,
     ws: Workspace = Depends(get_workspace_for_user),
     db: Session = Depends(get_db),
 ):
-    """Пересчёт юнит-экономики для указанных SKU (или всех)."""
     q = db.query(Sku).filter_by(workspace_id=ws.id)
     if req.sku_ids:
         q = q.filter(Sku.id.in_(req.sku_ids))
@@ -139,6 +133,7 @@ def calc_batch(
             "weight_kg": s.weight_kg,
             "price_rub": float(s.price_rub), "cost_rub": float(s.cost_rub),
             "drr_pct": s.drr_pct,
+            "stock_total": getattr(s, "stock_total", 0) or 0,
         }
         results.append(calc_one(d, store, cats,
             tax_rate_override=tax_override,
