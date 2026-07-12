@@ -1,7 +1,4 @@
-"""Клиент Yandex.Market Partner API.
-
-Авторизация: Api-Key (рекомендуется в 2024+).
-"""
+"""Клиент Yandex.Market Partner API."""
 from __future__ import annotations
 import httpx
 from typing import Any
@@ -9,9 +6,18 @@ from typing import Any
 BASE_URL = "https://api.partner.market.yandex.ru"
 
 
+def _num(v):
+    """Мягкое приведение к float."""
+    try:
+        if v is None or v == "": return 0.0
+        return float(v)
+    except (ValueError, TypeError):
+        return 0.0
+
+
 class YaMarketClient:
     def __init__(self, api_token: str, business_id: int | None = None,
-                 campaign_id: int | None = None, timeout: float = 30.0):
+                 campaign_id: int | None = None, timeout: float = 60.0):
         self.token = api_token
         self.business_id = business_id
         self.campaign_id = campaign_id
@@ -39,6 +45,7 @@ class YaMarketClient:
             raise ValueError("business_id обязателен")
         params = {"limit": limit}
         if page_token: params["page_token"] = page_token
+        # Пустое тело + все поля офферов включая габариты
         r = self._client.post(
             f"/businesses/{self.business_id}/offer-mappings",
             params=params, json={},
@@ -68,7 +75,6 @@ class YaMarketClient:
         return r.json().get("result", {}).get("offers", [])
 
     def iterate_all_stocks(self) -> list[dict]:
-        """Все остатки FBY/FBS/FBW по кампании."""
         if not self.campaign_id:
             raise ValueError("campaign_id обязателен")
         all_items: list[dict] = []
@@ -94,30 +100,58 @@ class YaMarketClient:
         return all_items
 
 
+def _extract_dims(offer: dict) -> tuple[float, float, float, float]:
+    """Достаёт (length_cm, width_cm, height_cm, weight_kg) из offer.
+    Пробует несколько путей: weightDimensions, dimensions, отдельные поля."""
+    # Основной путь: weightDimensions
+    wd = offer.get("weightDimensions") or offer.get("weight_dimensions") or {}
+    if isinstance(wd, dict) and any(wd.get(k) for k in ("length","width","height","weight")):
+        return (_num(wd.get("length")), _num(wd.get("width")),
+                _num(wd.get("height")), _num(wd.get("weight")))
+    # Альтернатива: dimensions
+    d = offer.get("dimensions") or {}
+    if isinstance(d, dict) and any(d.get(k) for k in ("length","width","height")):
+        return (_num(d.get("length")), _num(d.get("width")),
+                _num(d.get("height")), _num(offer.get("weight")))
+    # Плоские поля
+    return (
+        _num(offer.get("length")),
+        _num(offer.get("width")),
+        _num(offer.get("height")),
+        _num(offer.get("weight")),
+    )
+
+
+def _extract_price(offer: dict) -> float:
+    """Ищет цену в offer.basicPrice.value или offer.price.value."""
+    for key in ("basicPrice", "price", "purchasePrice"):
+        p = offer.get(key)
+        if isinstance(p, dict) and p.get("value") is not None:
+            return _num(p.get("value"))
+    return 0.0
+
+
 def offer_to_sku_dict(offer_mapping: dict) -> dict:
-    offer = offer_mapping.get("offer", {})
+    offer = offer_mapping.get("offer", {}) or {}
     mapping = offer_mapping.get("mapping", {}) or {}
-    weight_dims = offer.get("weightDimensions", {}) or {}
-    category = mapping.get("marketCategoryName") or ""
+    category = mapping.get("marketCategoryName") or offer.get("marketCategoryName") or ""
     our_category = _map_ya_category(category)
-    price_obj = offer.get("basicPrice", {}) or {}
-    price = float(price_obj.get("value") or 0)
+    L, W, H, wg = _extract_dims(offer)
     return {
         "sku": str(offer.get("offerId") or ""),
         "name": str(offer.get("name") or "")[:500],
         "category": our_category,
         "model": "FBS",
-        "length_cm": float(weight_dims.get("length") or 0),
-        "width_cm":  float(weight_dims.get("width")  or 0),
-        "height_cm": float(weight_dims.get("height") or 0),
-        "weight_kg": float(weight_dims.get("weight") or 0),
-        "price_rub": price,
+        "length_cm": L,
+        "width_cm":  W,
+        "height_cm": H,
+        "weight_kg": wg,
+        "price_rub": _extract_price(offer),
         "cost_rub":  0,
     }
 
 
 def stock_record_to_total(rec: dict) -> tuple[str, int]:
-    """Из записи остатков вытаскивает (offer_id, total_fit_stock)."""
     oid = str(rec.get("offerId") or "")
     total = 0
     for stk in rec.get("stocks", []):
