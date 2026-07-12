@@ -2,7 +2,6 @@
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 
-# ---- Auth ----
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=200)
@@ -27,7 +26,6 @@ class UserResponse(BaseModel):
     name: str
 
 
-# ---- Workspaces ----
 class WorkspaceCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
 
@@ -40,7 +38,6 @@ class WorkspaceResponse(BaseModel):
     role: str = "member"
 
 
-# ---- Store settings ----
 class StoreSettingsUpdate(BaseModel):
     tax_system: str | None = None
     tax_rate: float | None = None
@@ -64,7 +61,6 @@ class StoreSettingsResponse(BaseModel):
     default_drr_pct: float
 
 
-# ---- Categories ----
 class CategoryCreate(BaseModel):
     name: str = Field(min_length=1, max_length=200)
     fby_rate: float = 0.15
@@ -81,7 +77,6 @@ class CategoryResponse(BaseModel):
     note: str
 
 
-# ---- SKU ----
 class SkuBase(BaseModel):
     sku: str
     name: str = ""
@@ -94,6 +89,7 @@ class SkuBase(BaseModel):
     price_rub: float = 0
     cost_rub: float = 0
     drr_pct: float | None = None
+    stock_total: int = 0
 
 
 class SkuCreate(SkuBase):
@@ -111,6 +107,7 @@ class SkuUpdate(BaseModel):
     price_rub: float | None = None
     cost_rub: float | None = None
     drr_pct: float | None = None
+    stock_total: int | None = None
 
 
 class SkuResponse(SkuBase):
@@ -118,7 +115,6 @@ class SkuResponse(SkuBase):
     id: int
 
 
-# ---- Marketplace account ----
 class MarketplaceAccountCreate(BaseModel):
     marketplace: str = "ya_market"
     api_token: str
@@ -134,12 +130,10 @@ class MarketplaceAccountResponse(BaseModel):
     business_id: int | None
     campaign_id: int | None
     label: str
-    # api_token НЕ отдаём — секрет
 
 
-# ---- Calc ----
 class CalcRequest(BaseModel):
-    sku_ids: list[int] | None = None  # если None — считаем все SKU в workspace
+    sku_ids: list[int] | None = None
     tax_system: str | None = None
     acquiring_rate: float | None = None
     drr_pct: float | None = None
