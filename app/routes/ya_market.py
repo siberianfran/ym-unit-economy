@@ -36,6 +36,24 @@ def list_campaigns(
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, f"Ошибка: {e}")
 
 
+@router.get("/debug-offer")
+def debug_offer(
+    ws: Workspace = Depends(get_workspace_for_user),
+    db: Session = Depends(get_db),
+):
+    """Отладочный endpoint: возвращает raw JSON первого оффера (для проверки полей габаритов/веса)."""
+    acc = _get_account(db, ws.id)
+    if not acc.business_id:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Нет business_id.")
+    try:
+        with YaMarketClient(acc.api_token, business_id=acc.business_id) as cl:
+            data = cl.list_offer_mappings(limit=1)
+    except httpx.HTTPStatusError as e:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY,
+            f"Ya.Market {e.response.status_code}: {e.response.text[:300]}")
+    return data
+
+
 @router.post("/import-offers")
 def import_offers(
     ws: Workspace = Depends(get_workspace_for_user),
@@ -54,15 +72,23 @@ def import_offers(
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, f"Ошибка: {e}")
 
     created = updated = 0
+    with_dims = 0
     for offer_mapping in offers:
         item = offer_to_sku_dict(offer_mapping)
         if not item["sku"]: continue
+        if item["length_cm"] > 0 or item["weight_kg"] > 0:
+            with_dims += 1
         existing = db.query(Sku).filter_by(workspace_id=ws.id, sku=item["sku"]).first()
         if existing:
             saved_cost = float(existing.cost_rub)
             for k, v in item.items():
                 if k == "cost_rub" and saved_cost > 0:
                     continue
+                # Не обнуляем цену/габариты если Маркет вернул 0, а в базе > 0
+                if k in ("length_cm","width_cm","height_cm","weight_kg","price_rub"):
+                    old = float(getattr(existing, k) or 0)
+                    if (v or 0) == 0 and old > 0:
+                        continue
                 setattr(existing, k, v)
             updated += 1
         else:
@@ -73,6 +99,8 @@ def import_offers(
         "total_offers_from_ya_market": len(offers),
         "created_in_our_db": created,
         "updated_in_our_db": updated,
+        "with_dims_or_weight": with_dims,
+        "hint": "Себестоимость Маркет через API не отдаёт — используйте импорт из xlsx",
     }
 
 
@@ -117,7 +145,6 @@ def sync_stocks(
     ws: Workspace = Depends(get_workspace_for_user),
     db: Session = Depends(get_db),
 ):
-    """Тянет остатки FBY+FBS+FBW из Ya.Market и складывает в поле stock_total."""
     acc = _get_account(db, ws.id)
     if not acc.campaign_id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Нет campaign_id.")
