@@ -71,6 +71,9 @@ tailwind.config = {theme:{extend:{colors:{brand:{50:'#FEF2F2',100:'#FDE7E7',500:
       <button @click="importFromYaMarket()" :disabled="importing" class="btn-primary text-sm disabled:opacity-50"><span x-show="!importing">📥 Импорт из Ya.Market</span><span x-show="importing">Загрузка...</span></button>
       <button @click="syncPricesFromYaMarket()" :disabled="importing" class="btn-secondary text-sm">💰 Синхронизация цен</button>
       <button @click="syncStocksFromYaMarket()" :disabled="syncingStocks" class="btn-secondary text-sm"><span x-show="!syncingStocks">📦 Синхронизация остатков</span><span x-show="syncingStocks">Загрузка...</span></button>
+      <button @click="$refs.costFile.click()" :disabled="uploadingCosts" class="btn-secondary text-sm"><span x-show="!uploadingCosts">📊 Импорт себестоимости</span><span x-show="uploadingCosts">Загрузка...</span></button>
+      <input type="file" x-ref="costFile" accept=".xlsx" @change="onImportCostsFile($event)" class="hidden">
+      <button @click="debugOffer()" class="btn-secondary text-sm" title="Показать структуру первого оффера">🔍 Проверить оффер</button>
       <button @click="addRow()" class="btn-secondary text-sm">+ SKU вручную</button>
       <div class="flex-1"></div>
       <div class="text-sm text-slate-500">Отфильтровать: <input type="text" x-model="filter" placeholder="по SKU или названию" class="ml-1 border border-slate-200 rounded px-2 py-1 text-xs w-52"></div>
@@ -178,6 +181,6 @@ tailwind.config = {theme:{extend:{colors:{brand:{50:'#FEF2F2',100:'#FDE7E7',500:
 
 <div x-show="toast.text" class="fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl z-50" x-cloak><div class="text-sm" x-text="toast.text"></div></div>
 
-<script src="/static/app.js?v=3"></script>
+<script src="/static/app.js?v=4"></script>
 </body>
 </html>
