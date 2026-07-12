@@ -3,11 +3,9 @@
 Документация:
   https://yandex.ru/dev/market/partner-api/doc/ru/
 
-Мы используем:
-  - GET  /businesses/{businessId}/offer-mappings/                 → получить все офферы
-  - POST /businesses/{businessId}/offer-mappings                  → детали по SKU
-  - GET  /campaigns/                                              → список магазинов (кампаний)
-  - POST /campaigns/{campaignId}/offers/prices                    → цены товаров
+Авторизация: Api-Key (рекомендуемый способ в 2024+).
+  Формат ключа: ACMA:xxxxx:xxxxx (получается в ЛК partner.market.yandex.ru).
+  Заголовок: Api-Key: <ключ>
 """
 from __future__ import annotations
 import httpx
@@ -27,7 +25,7 @@ class YaMarketClient:
         self._client = httpx.Client(
             base_url=BASE_URL,
             headers={
-                "Authorization": f"Bearer {api_token}",
+                "Api-Key": api_token,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
@@ -42,7 +40,7 @@ class YaMarketClient:
     # ---------- Кампании (магазины) ----------
     def list_campaigns(self) -> list[dict]:
         """Список магазинов пользователя."""
-        r = self._client.get("/campaigns/")
+        r = self._client.get("/campaigns")
         r.raise_for_status()
         return r.json().get("campaigns", [])
 
