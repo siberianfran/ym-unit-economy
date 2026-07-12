@@ -6,7 +6,6 @@ from app.database import Base
 
 
 class Category(Base):
-    """Категория товара и ставки комиссии Я.Маркета (FBY/FBS)."""
     __tablename__ = "categories"
     __table_args__ = (UniqueConstraint("workspace_id", "name"),)
 
@@ -19,7 +18,6 @@ class Category(Base):
 
 
 class StoreSettings(Base):
-    """Настройки магазина: система налогов, эквайринг, ДРР по умолчанию."""
     __tablename__ = "store_settings"
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -38,7 +36,6 @@ class StoreSettings(Base):
 
 
 class Sku(Base):
-    """Товар в каталоге workspace'а. sku — артикул продавца (offer_id для Ya.Market)."""
     __tablename__ = "skus"
     __table_args__ = (UniqueConstraint("workspace_id", "sku"),)
 
@@ -47,7 +44,7 @@ class Sku(Base):
     sku: Mapped[str] = mapped_column(String(200), index=True)
     name: Mapped[str] = mapped_column(String(500), default="")
     category: Mapped[str] = mapped_column(String(200), default="Товары для дома (общ)")
-    model: Mapped[str] = mapped_column(String(8), default="FBS")  # FBY | FBS
+    model: Mapped[str] = mapped_column(String(8), default="FBS")
 
     length_cm: Mapped[float] = mapped_column(Float, default=0)
     width_cm: Mapped[float] = mapped_column(Float, default=0)
@@ -56,9 +53,10 @@ class Sku(Base):
 
     price_rub: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
     cost_rub: Mapped[float] = mapped_column(Numeric(12, 2), default=0)
-    drr_pct: Mapped[float | None] = mapped_column(Float, nullable=True)  # None → берётся из настроек
+    drr_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
 
-    # Дополнительные данные для истории (можно расширять)
+    stock_total: Mapped[int] = mapped_column(Integer, default=0)
+
     external_data: Mapped[dict] = mapped_column(JSON, default=dict)
 
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
