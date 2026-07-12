@@ -1,11 +1,6 @@
 """Клиент Yandex.Market Partner API.
 
-Документация:
-  https://yandex.ru/dev/market/partner-api/doc/ru/
-
-Авторизация: Api-Key (рекомендуемый способ в 2024+).
-  Формат ключа: ACMA:xxxxx:xxxxx (получается в ЛК partner.market.yandex.ru).
-  Заголовок: Api-Key: <ключ>
+Авторизация: Api-Key (рекомендуется в 2024+).
 """
 from __future__ import annotations
 import httpx
@@ -15,8 +10,6 @@ BASE_URL = "https://api.partner.market.yandex.ru"
 
 
 class YaMarketClient:
-    """Простой клиент для Ya.Market Partner API."""
-
     def __init__(self, api_token: str, business_id: int | None = None,
                  campaign_id: int | None = None, timeout: float = 30.0):
         self.token = api_token
@@ -34,21 +27,16 @@ class YaMarketClient:
 
     def __enter__(self): return self
     def __exit__(self, *a): self._client.close()
-
     def close(self): self._client.close()
 
-    # ---------- Кампании (магазины) ----------
     def list_campaigns(self) -> list[dict]:
-        """Список магазинов пользователя."""
         r = self._client.get("/campaigns")
         r.raise_for_status()
         return r.json().get("campaigns", [])
 
-    # ---------- Офферы (карточки товаров) ----------
     def list_offer_mappings(self, page_token: str | None = None, limit: int = 200) -> dict:
-        """Получить список офферов (SKU + артикул + категория + цена + габариты)."""
         if not self.business_id:
-            raise ValueError("business_id обязателен для списка офферов")
+            raise ValueError("business_id обязателен")
         params = {"limit": limit}
         if page_token: params["page_token"] = page_token
         r = self._client.post(
@@ -59,7 +47,6 @@ class YaMarketClient:
         return r.json().get("result", {})
 
     def iterate_all_offers(self) -> list[dict]:
-        """Полный список офферов с пагинацией."""
         all_items = []
         page_token = None
         while True:
@@ -67,15 +54,12 @@ class YaMarketClient:
             items = data.get("offerMappings", [])
             all_items.extend(items)
             page_token = data.get("paging", {}).get("nextPageToken")
-            if not page_token:
-                break
+            if not page_token: break
         return all_items
 
-    # ---------- Цены ----------
     def get_prices(self, offer_ids: list[str]) -> list[dict]:
-        """Свежие цены для конкретных офферов."""
         if not self.campaign_id:
-            raise ValueError("campaign_id обязателен для цен")
+            raise ValueError("campaign_id обязателен")
         r = self._client.post(
             f"/campaigns/{self.campaign_id}/offer-prices",
             json={"offerIds": offer_ids},
@@ -83,37 +67,70 @@ class YaMarketClient:
         r.raise_for_status()
         return r.json().get("result", {}).get("offers", [])
 
+    def iterate_all_stocks(self) -> list[dict]:
+        """Все остатки FBY/FBS/FBW по кампании."""
+        if not self.campaign_id:
+            raise ValueError("campaign_id обязателен")
+        all_items: list[dict] = []
+        page_token: str | None = None
+        while True:
+            params = {"limit": 200}
+            if page_token: params["page_token"] = page_token
+            r = self._client.post(
+                f"/campaigns/{self.campaign_id}/offers/stocks",
+                params=params, json={},
+            )
+            r.raise_for_status()
+            data = r.json().get("result", {})
+            items = data.get("warehouses", []) or data.get("offers", [])
+            for wh in items:
+                if "offers" in wh:
+                    for off in wh["offers"]:
+                        all_items.append(off)
+                elif "offerId" in wh:
+                    all_items.append(wh)
+            page_token = (data.get("paging") or {}).get("nextPageToken")
+            if not page_token: break
+        return all_items
+
 
 def offer_to_sku_dict(offer_mapping: dict) -> dict:
-    """Преобразует offer-mapping из Ya.Market в наш формат SKU для bulk-upsert."""
     offer = offer_mapping.get("offer", {})
     mapping = offer_mapping.get("mapping", {}) or {}
-
     weight_dims = offer.get("weightDimensions", {}) or {}
-
-    # Категория Ya.Market
     category = mapping.get("marketCategoryName") or ""
     our_category = _map_ya_category(category)
-
     price_obj = offer.get("basicPrice", {}) or {}
     price = float(price_obj.get("value") or 0)
-
     return {
         "sku": str(offer.get("offerId") or ""),
         "name": str(offer.get("name") or "")[:500],
         "category": our_category,
-        "model": "FBS",  # по умолчанию, потом можно менять в UI
+        "model": "FBS",
         "length_cm": float(weight_dims.get("length") or 0),
         "width_cm":  float(weight_dims.get("width")  or 0),
         "height_cm": float(weight_dims.get("height") or 0),
         "weight_kg": float(weight_dims.get("weight") or 0),
         "price_rub": price,
-        "cost_rub":  0,  # себестоимость Я.Маркет не отдаёт, заполним потом
+        "cost_rub":  0,
     }
 
 
+def stock_record_to_total(rec: dict) -> tuple[str, int]:
+    """Из записи остатков вытаскивает (offer_id, total_fit_stock)."""
+    oid = str(rec.get("offerId") or "")
+    total = 0
+    for stk in rec.get("stocks", []):
+        if str(stk.get("type") or "").upper() in ("FIT", "AVAILABLE", "AVAILABLE_STOCK"):
+            total += int(stk.get("count") or 0)
+    for wh in rec.get("warehouses", []):
+        for stk in wh.get("stocks", []):
+            if str(stk.get("type") or "").upper() in ("FIT", "AVAILABLE", "AVAILABLE_STOCK"):
+                total += int(stk.get("count") or 0)
+    return oid, total
+
+
 def _map_ya_category(cat: str) -> str:
-    """Совпадает с логикой парсера xlsx выгрузки."""
     c = (cat or "").lower()
     if "групп" in c and "обеденн" in c:  return "Комплекты кухонные"
     if "комплект" in c and ("стул" in c or "кухн" in c): return "Комплекты кухонные"
