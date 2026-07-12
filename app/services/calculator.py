@@ -1,4 +1,4 @@
-"""Ядро расчёта юнит-экономики Я.Маркет — та же логика, что в предыдущих версиях."""
+"""Ядро расчёта юнит-экономики Я.Маркет."""
 import math
 from app.seed import LOGISTICS, ACQUIRING_OPTIONS
 
@@ -23,12 +23,6 @@ def _middle_mile(v, tiers):
 
 def calc_one(sku_dict, store, categories,
              tax_rate_override=None, acquiring_override=None, drr_override=None):
-    """Расчёт по одному SKU.
-
-    sku_dict: SKU в виде dict (sku, category, model, размеры, цена, себестоимость, drr_pct)
-    store: dict настроек магазина (tax_rate, acquiring_rate, return_pct, return_cost_rub, default_drr_pct)
-    categories: dict {name -> {fby_rate, fbs_rate}}
-    """
     log = LOGISTICS
     tiers = log["middle_mile"]
 
@@ -47,7 +41,6 @@ def calc_one(sku_dict, store, categories,
     tax = tax_rate_override if tax_rate_override is not None else store.get("tax_rate", 0)
     acq = acquiring_override if acquiring_override is not None else store.get("acquiring_rate", 0.023)
 
-    # Комиссия по категории
     cat = categories.get(cat_name) or {"fby_rate": 0.18, "fbs_rate": 0.25}
     cat_rate = cat["fby_rate"] if model == "FBY" else cat["fbs_rate"]
 
@@ -87,6 +80,7 @@ def calc_one(sku_dict, store, categories,
         "price_rub": round(price, 2),
         "cost_rub": round(cost, 2),
         "drr_pct": round(drr, 4),
+        "stock_total": int(sku_dict.get("stock_total") or 0),
         "volume_l": volume,
         "is_cheap": cheap,
         "commission_rub": round(commission, 2),
