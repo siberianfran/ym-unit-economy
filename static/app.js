@@ -31,6 +31,7 @@ function app() {
     onlyInStock: localStorage.getItem('onlyInStock') === '1',
     importing: false,
     syncingStocks: false,
+    uploadingCosts: false,
     toast: {text:''},
 
     async init() {
@@ -184,7 +185,7 @@ function app() {
       this.importing = true;
       try {
         const r = await this.api('POST', '/api/workspaces/' + this.currentWs + '/ya-market/import-offers');
-        this.showToast('Импорт: ' + r.created_in_our_db + ' создано, ' + r.updated_in_our_db + ' обновлено');
+        this.showToast('Импорт: ' + r.created_in_our_db + ' создано, ' + r.updated_in_our_db + ' обновлено, с габаритами: ' + (r.with_dims_or_weight||0));
         await this.recalc();
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
       finally { this.importing = false; }
@@ -208,6 +209,40 @@ function app() {
         await this.recalc();
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
       finally { this.syncingStocks = false; }
+    },
+
+    async onImportCostsFile(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      this.uploadingCosts = true;
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        const r = await fetch('/api/workspaces/' + this.currentWs + '/skus/import-costs', {
+          method: 'POST',
+          headers: {'Authorization': 'Bearer ' + this.token},
+          body: fd,
+        });
+        if (!r.ok) throw new Error(await r.text());
+        const data = await r.json();
+        this.showToast('Себестоимость: обновлено ' + data.updated_cost_rub + ' из ' + data.matched_by_sku + ' совпадений (файл: ' + data.rows_with_cost_in_file + ' строк с cost)');
+        await this.recalc();
+      } catch(e) { this.showToast('Ошибка импорта: ' + e.message); }
+      finally {
+        this.uploadingCosts = false;
+        evt.target.value = '';
+      }
+    },
+
+    async debugOffer() {
+      try {
+        const r = await this.api('GET', '/api/workspaces/' + this.currentWs + '/ya-market/debug-offer');
+        const off = r.offerMappings && r.offerMappings[0];
+        if (!off) { alert('Нет офферов'); return; }
+        const pretty = JSON.stringify(off, null, 2);
+        const w = window.open('', '_blank');
+        w.document.write('<pre style="font:12px monospace;padding:20px;white-space:pre-wrap;word-break:break-all">' + pretty.replace(/</g,'&lt;') + '</pre>');
+      } catch(e) { this.showToast('Ошибка: ' + e.message); }
     },
 
     get filteredResults() {
@@ -248,7 +283,7 @@ function app() {
     showToast(text) {
       this.toast.text = text;
       clearTimeout(this._t);
-      this._t = setTimeout(() => this.toast.text = '', 3000);
+      this._t = setTimeout(() => this.toast.text = '', 5000);
     },
   }
 }
