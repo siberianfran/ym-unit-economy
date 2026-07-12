@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pathlib import Path
+from sqlalchemy import inspect, text
 
 from app.config import settings
 from app.database import engine, Base
@@ -25,6 +26,24 @@ app.add_middleware(
 )
 
 Base.metadata.create_all(bind=engine)
+
+
+def _apply_lightweight_migrations():
+    with engine.begin() as conn:
+        insp = inspect(conn)
+        try:
+            cols = {c["name"] for c in insp.get_columns("skus")}
+        except Exception:
+            return
+        if "stock_total" not in cols:
+            try:
+                conn.execute(text("ALTER TABLE skus ADD COLUMN stock_total INTEGER DEFAULT 0"))
+            except Exception as e:
+                print(f"[migrate] add stock_total failed: {e}")
+
+
+_apply_lightweight_migrations()
+
 
 app.include_router(auth.router)
 app.include_router(workspaces.router)
