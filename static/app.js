@@ -1,4 +1,4 @@
-// Юнит-экономика SaaS — фронт (Alpine.js)
+// MARJA — юнит-экономика для маркетплейсов (Alpine.js)
 
 function app() {
   return {
@@ -12,6 +12,8 @@ function app() {
     currentWs: null,
     newWsName: '',
     showNewWs: false,
+
+    currentMp: 'ya_market',
 
     skus: [],
     categories: [],
@@ -29,6 +31,9 @@ function app() {
     filter: '',
     onlyWithCost: localStorage.getItem('onlyWithCost') === '1',
     onlyInStock: localStorage.getItem('onlyInStock') === '1',
+    marginFilter: 'all',
+    sortField: null,
+    sortDir: 'asc',
     importing: false,
     syncingStocks: false,
     uploadingCosts: false,
@@ -185,7 +190,7 @@ function app() {
       this.importing = true;
       try {
         const r = await this.api('POST', '/api/workspaces/' + this.currentWs + '/ya-market/import-offers');
-        this.showToast('Импорт: ' + r.created_in_our_db + ' создано, ' + r.updated_in_our_db + ' обновлено, с габаритами: ' + (r.with_dims_or_weight||0));
+        this.showToast('Импорт: ' + r.created_in_our_db + ' создано, ' + r.updated_in_our_db + ' обновлено');
         await this.recalc();
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
       finally { this.importing = false; }
@@ -195,7 +200,7 @@ function app() {
       this.importing = true;
       try {
         const r = await this.api('POST', '/api/workspaces/' + this.currentWs + '/ya-market/sync-prices');
-        this.showToast('Цены: ' + r.updated + ' обновлено (из ' + r.matched + ')');
+        this.showToast('Цены: ' + r.updated + ' обновлено');
         await this.recalc();
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
       finally { this.importing = false; }
@@ -205,7 +210,7 @@ function app() {
       this.syncingStocks = true;
       try {
         const r = await this.api('POST', '/api/workspaces/' + this.currentWs + '/ya-market/sync-stocks');
-        this.showToast('Остатки: ' + r.updated + ' обновлено, в наличии ' + r.in_stock + ' из ' + r.total_skus);
+        this.showToast('Остатки: ' + r.updated + ' обновлено, в наличии ' + r.in_stock + '/' + r.total_skus);
         await this.recalc();
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
       finally { this.syncingStocks = false; }
@@ -225,13 +230,10 @@ function app() {
         });
         if (!r.ok) throw new Error(await r.text());
         const data = await r.json();
-        this.showToast('Себестоимость: обновлено ' + data.updated_cost_rub + ' из ' + data.matched_by_sku + ' совпадений (файл: ' + data.rows_with_cost_in_file + ' строк с cost)');
+        this.showToast('Обновлено ' + data.updated_cost_rub + '/' + data.matched_by_sku);
         await this.recalc();
       } catch(e) { this.showToast('Ошибка импорта: ' + e.message); }
-      finally {
-        this.uploadingCosts = false;
-        evt.target.value = '';
-      }
+      finally { this.uploadingCosts = false; evt.target.value = ''; }
     },
 
     async debugOffer() {
@@ -245,13 +247,39 @@ function app() {
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
     },
 
+    toggleSort(field) {
+      if (this.sortField !== field) { this.sortField = field; this.sortDir = 'asc'; return; }
+      if (this.sortDir === 'asc') { this.sortDir = 'desc'; return; }
+      this.sortField = null; this.sortDir = 'asc';
+    },
+
+    sortArrow(field) {
+      if (this.sortField !== field) return '';
+      return this.sortDir === 'asc' ? ' \u2191' : ' \u2193';
+    },
+
     get filteredResults() {
       let arr = this.results;
       if (this.onlyWithCost) arr = arr.filter(r => (+r.cost_rub) > 0);
       if (this.onlyInStock)  arr = arr.filter(r => (+r.stock_total) > 0);
+      if (this.marginFilter === 'good') arr = arr.filter(r => r.margin_pct >= 15);
+      if (this.marginFilter === 'mid')  arr = arr.filter(r => r.margin_pct >= 5 && r.margin_pct < 15);
+      if (this.marginFilter === 'bad')  arr = arr.filter(r => r.margin_pct < 5);
       if (this.filter) {
         const q = this.filter.toLowerCase();
         arr = arr.filter(r => (r.sku||'').toLowerCase().includes(q) || (r.name||'').toLowerCase().includes(q));
+      }
+      if (this.sortField) {
+        const f = this.sortField;
+        const sign = this.sortDir === 'desc' ? -1 : 1;
+        const isNum = ['price_rub','cost_rub','stock_total','profit_rub','margin_pct'].includes(f);
+        arr = [...arr].sort((a,b) => {
+          let va = a[f], vb = b[f];
+          if (isNum) { va = +va || 0; vb = +vb || 0; return sign * (va - vb); }
+          va = (va||'').toString().toLowerCase();
+          vb = (vb||'').toString().toLowerCase();
+          return sign * va.localeCompare(vb, 'ru');
+        });
       }
       return arr;
     },
@@ -271,19 +299,20 @@ function app() {
       };
     },
 
-    fmtRub(v) { if (v == null || isNaN(v)) return '—'; return Math.round(v).toLocaleString('ru-RU') + ' ₽'; },
-    fmtPct(v) { if (v == null || isNaN(v)) return '—'; return v.toFixed(1) + '%'; },
-    marginColor(pct) {
-      if (pct == null || isNaN(pct)) return 'bg-slate-100 text-slate-400';
-      if (pct >= 15) return 'bg-emerald-50 text-emerald-700 border-emerald-100';
-      if (pct >= 5)  return 'bg-amber-50 text-amber-700 border-amber-100';
-      return 'bg-rose-50 text-rose-700 border-rose-100';
+    fmtRub(v) { if (v == null || isNaN(v)) return '\u2014'; return Math.round(v).toLocaleString('ru-RU') + ' \u20BD'; },
+    fmtPct(v) { if (v == null || isNaN(v)) return '\u2014'; return v.toFixed(1) + '%'; },
+
+    marginBg(pct) {
+      if (pct == null || isNaN(pct)) return 'background:rgba(255,255,255,0.06);color:#A1A1AA';
+      if (pct >= 15) return 'background:#10B981;color:#053426';
+      if (pct >= 5)  return 'background:#FCD34D;color:#3F2A00';
+      return 'background:#FB7185;color:#4C0519';
     },
 
     showToast(text) {
       this.toast.text = text;
       clearTimeout(this._t);
-      this._t = setTimeout(() => this.toast.text = '', 5000);
+      this._t = setTimeout(() => this.toast.text = '', 4000);
     },
   }
 }
