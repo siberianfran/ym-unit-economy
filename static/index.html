@@ -3,238 +3,235 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MARJA — юнит-экономика для маркетплейсов</title>
+<title>MARJA — unit-экономика для маркетплейсов</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
 <script>
 tailwind.config = {theme:{extend:{
   colors:{
-    ink:'#0A0A0A', paper:'#FAF6EF', card:'#FFFFFF',
-    marja:'#FFDF00', hot:'#FF3B7A', mint:'#B6F09C', sky:'#8AB4FF', coral:'#FF7A6C',
-    good:'#177A45', warn:'#8B6100', bad:'#B72E2E'
+    bg:'#0E0B1E', bg2:'#1A1332', bg3:'#251B45',
+    ink:'#EDE9FE', ink2:'#A1A1AA', ink3:'#71717A',
+    grape:'#8B5CF6', grape2:'#C4B5FD', grape3:'#2E1065',
+    mint:'#10B981', mint2:'#053426',
+    sun:'#FCD34D', sun2:'#3F2A00',
+    coral:'#FB7185', coral2:'#4C0519'
   },
   fontFamily:{
-    sans:['"Space Grotesk"','system-ui','sans-serif'],
-    mono:['"Space Mono"','ui-monospace','monospace']
-  },
-  boxShadow:{
-    'nb-sm':'3px 3px 0 #0A0A0A','nb':'5px 5px 0 #0A0A0A','nb-lg':'7px 7px 0 #0A0A0A',
-    'nb-hot':'5px 5px 0 #FF3B7A'
+    sans:['Manrope','system-ui','sans-serif'],
+    mono:['"JetBrains Mono"','ui-monospace','monospace']
   }
 }}}
 </script>
 <style>
   [x-cloak]{display:none!important}
-  html,body{background:#FAF6EF;font-family:'Space Grotesk',system-ui,sans-serif;color:#0A0A0A;min-height:100vh}
-  .btn{@apply inline-flex items-center gap-2 px-4 py-2.5 border-[3px] border-ink font-bold uppercase text-xs tracking-wider transition-all}
-  .btn:hover{transform:translate(-1px,-1px);box-shadow:6px 6px 0 #0A0A0A}
-  .btn:active{transform:translate(2px,2px);box-shadow:none}
-  .btn-p{@apply btn bg-ink text-marja shadow-nb}
-  .btn-p:hover{box-shadow:6px 6px 0 #FF3B7A}
-  .btn-s{@apply btn bg-white text-ink shadow-nb-sm}
-  .btn-y{@apply btn bg-marja text-ink shadow-nb-sm}
-  .btn-ghost{@apply inline-flex items-center gap-1 px-3 py-1.5 font-bold uppercase text-xs tracking-wider text-ink hover:bg-ink hover:text-marja border-[3px] border-transparent hover:border-ink}
-  .card{@apply bg-white border-[4px] border-ink shadow-nb}
-  .input{@apply w-full bg-white border-[3px] border-ink px-3 py-2.5 font-medium text-sm placeholder-ink/40 focus:outline-none focus:shadow-nb-sm focus:-translate-x-0.5 focus:-translate-y-0.5 transition-all}
-  .chip{@apply inline-flex items-center px-2.5 py-1 border-[2px] border-ink text-[11px] font-bold uppercase tracking-wider}
-  table input,table select{@apply bg-transparent border-b-2 border-transparent hover:border-ink/20 focus:border-ink focus:outline-none px-1.5 py-1 text-xs font-mono}
-  .cb{appearance:none;width:22px;height:22px;background:#FFF;border:3px solid #0A0A0A;cursor:pointer;position:relative;flex-shrink:0}
-  .cb:checked{background:#0A0A0A}
-  .cb:checked::after{content:'✓';position:absolute;top:-3px;left:2px;color:#FFDF00;font-weight:900;font-size:16px}
-  .tab{@apply flex-1 border-[4px] border-ink px-4 py-3 font-black uppercase text-sm text-center cursor-pointer transition-all}
-  .tab-active{@apply bg-marja shadow-nb}
-  .tab-inactive{@apply bg-white opacity-60}
-  .tab-soon{@apply bg-white opacity-45 cursor-not-allowed}
+  html,body{background:#0E0B1E;font-family:'Manrope',system-ui,sans-serif;color:#EDE9FE;min-height:100vh;letter-spacing:-0.01em}
+  .hero-gradient{background:linear-gradient(0deg, #8B5CF6 0%, #5B21B6 25%, #2E1065 55%, #0E0B1E 100%)}
+  .pill{@apply inline-flex items-center gap-2 px-4 py-2.5 rounded-full font-semibold text-sm transition-all}
+  .pill-p{@apply pill bg-ink text-bg hover:bg-grape2}
+  .pill-s{@apply pill bg-transparent border border-white/15 text-ink hover:bg-white/5 hover:border-white/30}
+  .pill-g{@apply pill bg-grape text-white hover:bg-grape/90}
+  .chip{@apply inline-flex items-center px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider}
+  .card{@apply rounded-3xl bg-bg2 p-5}
+  .input{@apply w-full bg-bg2 border border-white/10 rounded-2xl px-4 py-3 text-ink font-medium text-sm placeholder-ink3 focus:outline-none focus:border-grape focus:bg-bg3 transition-all}
+  .cb{appearance:none;width:20px;height:20px;background:transparent;border:2px solid #71717A;border-radius:6px;cursor:pointer;position:relative;flex-shrink:0;transition:all .15s}
+  .cb:checked{background:#8B5CF6;border-color:#8B5CF6}
+  .cb:checked::after{content:'';position:absolute;top:2px;left:5px;width:5px;height:9px;border:solid #FFF;border-width:0 2px 2px 0;transform:rotate(45deg)}
+  table input,table select{@apply bg-transparent border border-transparent hover:border-white/10 focus:border-grape focus:outline-none px-2 py-1.5 text-xs font-medium rounded-lg}
+  .tbl-row:hover{background:rgba(139,92,246,0.06)}
 </style>
 </head>
 <body x-data="app()" x-init="init()" x-cloak>
 
-<!-- ============ ЛОГИН / РЕГИСТРАЦИЯ ============ -->
-<div x-show="!token" class="min-h-screen flex items-center justify-center p-4">
-  <div class="card w-full max-w-md p-8">
-    <div class="flex items-center gap-3 mb-6">
-      <div class="w-12 h-12 bg-ink text-marja border-[3px] border-ink flex items-center justify-center font-black text-2xl">M</div>
-      <div>
-        <div class="text-3xl font-black tracking-tight leading-none">MARJA<span class="text-hot">.</span></div>
-        <div class="text-[10px] font-bold uppercase tracking-widest opacity-60">unit-экономика</div>
+<div x-show="!token" class="hero-gradient min-h-screen flex items-center justify-center p-6">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur mb-6">
+        <span class="w-2 h-2 rounded-full bg-mint"></span>
+        <span class="text-xs font-semibold text-white">unit-экономика · маркетплейсы</span>
       </div>
+      <div class="flex items-center justify-center gap-3 mb-4">
+        <div class="w-11 h-11 bg-white text-bg rounded-2xl flex items-center justify-center font-black text-2xl">m</div>
+        <span class="text-4xl font-extrabold tracking-tight text-white">marja</span>
+      </div>
+      <h1 class="text-4xl font-extrabold tracking-tight text-white leading-tight mb-3">Считай маржу<br>по каждому SKU.</h1>
+      <p class="text-white/70 font-medium">Ya.Market, WB, Ozon — одной таблицей</p>
     </div>
 
-    <div class="flex gap-0 mb-5 border-b-[3px] border-ink">
-      <button @click="authMode='login'" :class="authMode==='login'?'bg-marja border-ink text-ink':'border-transparent opacity-60'" class="px-4 py-2 -mb-[3px] border-b-[3px] font-black uppercase text-xs tracking-wider">Вход</button>
-      <button @click="authMode='register'" :class="authMode==='register'?'bg-marja border-ink text-ink':'border-transparent opacity-60'" class="px-4 py-2 -mb-[3px] border-b-[3px] font-black uppercase text-xs tracking-wider">Регистрация</button>
-    </div>
-
-    <div class="space-y-3">
-      <div>
-        <label class="text-[11px] font-black uppercase tracking-widest block mb-1">Email</label>
+    <div class="bg-bg2/70 backdrop-blur rounded-3xl p-6 border border-white/10">
+      <div class="flex gap-1 p-1 rounded-full bg-bg mb-5">
+        <button @click="authMode='login'" :class="authMode==='login'?'bg-grape text-white':'text-ink2'" class="flex-1 py-2 rounded-full font-semibold text-sm transition">Вход</button>
+        <button @click="authMode='register'" :class="authMode==='register'?'bg-grape text-white':'text-ink2'" class="flex-1 py-2 rounded-full font-semibold text-sm transition">Регистрация</button>
+      </div>
+      <div class="space-y-3">
         <input type="email" x-model="authForm.email" class="input" placeholder="you@example.com">
+        <input type="password" x-model="authForm.password" class="input" placeholder="Пароль от 8 символов">
+        <template x-if="authMode==='register'"><input type="text" x-model="authForm.name" class="input" placeholder="Ваше имя"></template>
+        <template x-if="authMode==='register'"><input type="text" x-model="authForm.workspace_name" class="input" placeholder="Название магазина"></template>
+        <div x-show="authError" class="rounded-2xl bg-coral/15 border border-coral/40 px-4 py-3 text-sm text-coral font-medium" x-text="authError"></div>
+        <button @click="doAuth()" class="w-full bg-white text-bg font-bold py-3.5 rounded-full hover:bg-grape2 transition">
+          <span x-text="authMode==='login' ? 'Войти' : 'Создать аккаунт'"></span>
+        </button>
       </div>
-      <div>
-        <label class="text-[11px] font-black uppercase tracking-widest block mb-1">Пароль</label>
-        <input type="password" x-model="authForm.password" class="input" placeholder="от 8 символов">
-      </div>
-      <template x-if="authMode==='register'">
-        <div>
-          <label class="text-[11px] font-black uppercase tracking-widest block mb-1">Имя</label>
-          <input type="text" x-model="authForm.name" class="input">
-        </div>
-      </template>
-      <template x-if="authMode==='register'">
-        <div>
-          <label class="text-[11px] font-black uppercase tracking-widest block mb-1">Название магазина</label>
-          <input type="text" x-model="authForm.workspace_name" class="input" placeholder="Дом столов">
-        </div>
-      </template>
-      <div x-show="authError" class="bg-coral border-[3px] border-ink px-3 py-2 text-xs font-bold" x-text="authError"></div>
-      <button @click="doAuth()" class="btn-p w-full justify-center py-3 text-sm mt-2">
-        <span x-text="authMode==='login' ? '→ Войти' : '⚡ Создать аккаунт'"></span>
-      </button>
     </div>
-    <div class="text-center text-[10px] font-bold uppercase tracking-widest opacity-50 mt-5">Ya.Market · WB · Ozon (скоро)</div>
   </div>
 </div>
 
-<!-- ============ ОСНОВНОЕ ПРИЛОЖЕНИЕ ============ -->
 <div x-show="token">
-  <!-- ШАПКА -->
-  <header class="bg-marja border-b-[4px] border-ink sticky top-0 z-30">
-    <div class="max-w-[1600px] mx-auto px-6 py-4 flex items-center gap-4">
-      <div class="flex items-center gap-3">
-        <div class="w-11 h-11 bg-ink text-marja border-[3px] border-ink flex items-center justify-center font-black text-xl">M</div>
-        <div>
-          <div class="font-black text-xl leading-none tracking-tight">MARJA<span class="text-hot">.</span></div>
-          <div class="text-[9px] font-bold uppercase tracking-widest opacity-70" x-text="me?.email"></div>
+  <header class="hero-gradient border-b border-white/5">
+    <div class="max-w-[1600px] mx-auto px-6 pt-6 pb-24">
+      <div class="flex items-center justify-between mb-16">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 bg-white text-bg rounded-xl flex items-center justify-center font-black text-xl">m</div>
+          <span class="text-2xl font-extrabold tracking-tight text-white">marja</span>
+          <span class="chip bg-white/12 text-white ml-1">beta</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <select x-model.number="currentWs" @change="loadWorkspaceData()" class="pill-s !py-2 !pr-4 appearance-none bg-white/10 !border-white/20 text-white">
+            <template x-for="ws in workspaces" :key="ws.id"><option :value="ws.id" x-text="ws.name" class="text-bg"></option></template>
+          </select>
+          <button @click="showNewWs=true" class="pill-s !text-white !border-white/20">+ магазин</button>
+          <button @click="showSettings=true" class="pill-s !text-white !border-white/20">Настройки</button>
+          <button @click="showYaMarket=true" class="pill-s !text-white !border-white/20">API</button>
+          <button @click="logout()" class="pill bg-white text-bg">Выйти</button>
         </div>
       </div>
-      <div class="flex-1"></div>
-      <select x-model.number="currentWs" @change="loadWorkspaceData()" class="bg-white border-[3px] border-ink px-3 py-2 font-bold text-xs uppercase tracking-wider">
-        <template x-for="ws in workspaces" :key="ws.id"><option :value="ws.id" x-text="ws.name"></option></template>
-      </select>
-      <button @click="showNewWs=true" class="btn-ghost">+ магазин</button>
-      <button @click="showSettings=true" class="btn-ghost">Настройки</button>
-      <button @click="showYaMarket=true" class="btn-ghost">API</button>
-      <button @click="logout()" class="btn-ghost">Выйти</button>
+
+      <div class="text-center max-w-3xl mx-auto">
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur mb-5">
+          <span class="w-2 h-2 rounded-full bg-mint"></span>
+          <span class="text-xs font-semibold text-white" x-text="me?.email"></span>
+        </div>
+        <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.05] mb-4">Юнит-экономика<br>в реальном времени.</h1>
+        <p class="text-white/70 font-medium text-lg">Импортируешь из API — сразу видишь прибыль по каждому SKU</p>
+      </div>
     </div>
   </header>
 
-  <main class="max-w-[1600px] mx-auto px-6 py-6">
-    <!-- ТАБЫ МАРКЕТПЛЕЙСОВ -->
-    <div class="flex gap-3 mb-6">
-      <div :class="currentMp==='ya_market'?'tab tab-active':'tab tab-inactive'" @click="currentMp='ya_market'">
-        Я.МАРКЕТ<div class="text-[10px] font-bold opacity-70 mt-0.5" x-text="results.length + ' SKU'"></div>
-      </div>
-      <div class="tab tab-soon">WB<div class="text-[10px] font-bold opacity-70 mt-0.5">скоро</div></div>
-      <div class="tab tab-soon">OZON<div class="text-[10px] font-bold opacity-70 mt-0.5">скоро</div></div>
-    </div>
+  <main class="max-w-[1600px] mx-auto px-6 -mt-16 pb-16 relative z-10">
 
-    <!-- KPI -->
-    <section class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
-      <div class="card p-4">
-        <div class="text-[10px] font-black uppercase tracking-widest opacity-70">Всего SKU</div>
-        <div class="text-4xl font-black leading-none mt-2" x-text="summary.total_sku || 0"></div>
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+      <div :class="currentMp==='ya_market'?'bg-grape':'bg-bg2'" class="rounded-3xl p-6 cursor-pointer transition-all" @click="currentMp='ya_market'">
+        <div class="text-[10px] font-bold uppercase tracking-widest mb-1" :class="currentMp==='ya_market'?'text-grape3':'text-ink3'" x-text="currentMp==='ya_market'?'активен':'магазин'"></div>
+        <div class="text-2xl font-extrabold tracking-tight text-white">Я.Маркет</div>
+        <div class="text-sm font-semibold mt-1" :class="currentMp==='ya_market'?'text-white/75':'text-ink3'"><span x-text="results.length"></span> SKU</div>
       </div>
-      <div class="card p-4" style="background:#B6F09C">
-        <div class="text-[10px] font-black uppercase tracking-widest">Прибыль ≥15%</div>
-        <div class="text-4xl font-black leading-none mt-2" x-text="summary.profitable_15plus || 0"></div>
+      <div class="rounded-3xl p-6 bg-bg2 opacity-60 cursor-not-allowed">
+        <div class="text-[10px] font-bold uppercase tracking-widest mb-1 text-ink3">скоро</div>
+        <div class="text-2xl font-extrabold tracking-tight text-ink">Wildberries</div>
+        <div class="text-sm font-semibold mt-1 text-ink3">август 2026</div>
       </div>
-      <div class="card p-4" style="background:#FFDF00">
-        <div class="text-[10px] font-black uppercase tracking-widest">Грань 5–15%</div>
-        <div class="text-4xl font-black leading-none mt-2" x-text="summary.profitable_5_15 || 0"></div>
-      </div>
-      <div class="card p-4" style="background:#FF7A6C">
-        <div class="text-[10px] font-black uppercase tracking-widest">Убыточных</div>
-        <div class="text-4xl font-black leading-none mt-2" x-text="summary.losing || 0"></div>
-      </div>
-      <div class="card p-4" style="background:#8AB4FF">
-        <div class="text-[10px] font-black uppercase tracking-widest">Ср. маржа</div>
-        <div class="text-4xl font-black leading-none mt-2" x-text="(summary.avg_margin_pct||0)+'%'"></div>
+      <div class="rounded-3xl p-6 bg-bg2 opacity-60 cursor-not-allowed">
+        <div class="text-[10px] font-bold uppercase tracking-widest mb-1 text-ink3">скоро</div>
+        <div class="text-2xl font-extrabold tracking-tight text-ink">Ozon</div>
+        <div class="text-sm font-semibold mt-1 text-ink3">сентябрь 2026</div>
       </div>
     </section>
 
-    <!-- ДЕЙСТВИЯ -->
-    <section class="card p-4 mb-4 flex flex-wrap items-center gap-3">
-      <button @click="importFromYaMarket()" :disabled="importing" class="btn-p disabled:opacity-50">
-        <span x-show="!importing">↓ Импорт из API</span>
+    <section class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
+      <div class="rounded-3xl p-5 bg-bg2">
+        <div class="text-[11px] font-semibold text-ink2 mb-2">Всего SKU</div>
+        <div class="text-4xl font-extrabold tracking-tight text-ink" x-text="summary.total_sku || 0"></div>
+      </div>
+      <div class="rounded-3xl p-5 bg-mint">
+        <div class="text-[11px] font-bold text-mint2 uppercase tracking-wider mb-2">Прибыль ≥15%</div>
+        <div class="text-4xl font-extrabold tracking-tight text-mint2" x-text="summary.profitable_15plus || 0"></div>
+      </div>
+      <div class="rounded-3xl p-5 bg-sun">
+        <div class="text-[11px] font-bold text-sun2 uppercase tracking-wider mb-2">Грань 5–15%</div>
+        <div class="text-4xl font-extrabold tracking-tight text-sun2" x-text="summary.profitable_5_15 || 0"></div>
+      </div>
+      <div class="rounded-3xl p-5 bg-coral">
+        <div class="text-[11px] font-bold text-coral2 uppercase tracking-wider mb-2">Убыточных</div>
+        <div class="text-4xl font-extrabold tracking-tight text-coral2" x-text="summary.losing || 0"></div>
+      </div>
+      <div class="rounded-3xl p-5 bg-bg2 border border-grape/40">
+        <div class="text-[11px] font-semibold text-grape2 mb-2">Средняя маржа</div>
+        <div class="text-4xl font-extrabold tracking-tight text-grape2" x-text="(summary.avg_margin_pct||0)+'%'"></div>
+      </div>
+    </section>
+
+    <section class="flex flex-wrap items-center gap-2 mb-6">
+      <button @click="importFromYaMarket()" :disabled="importing" class="pill-p disabled:opacity-50">
+        <span x-show="!importing">↓ Импорт из Ya.Market</span>
         <span x-show="importing">Загрузка…</span>
       </button>
-      <button @click="syncPricesFromYaMarket()" :disabled="importing" class="btn-s">↻ Синх. цен</button>
-      <button @click="syncStocksFromYaMarket()" :disabled="syncingStocks" class="btn-s">
-        <span x-show="!syncingStocks">☐ Синх. остатков</span>
+      <button @click="syncPricesFromYaMarket()" :disabled="importing" class="pill-s">Синх. цен</button>
+      <button @click="syncStocksFromYaMarket()" :disabled="syncingStocks" class="pill-s">
+        <span x-show="!syncingStocks">Синх. остатков</span>
         <span x-show="syncingStocks">Загрузка…</span>
       </button>
-      <button @click="$refs.costFile.click()" :disabled="uploadingCosts" class="btn-s">
-        <span x-show="!uploadingCosts">↥ Импорт себест.</span>
+      <button @click="$refs.costFile.click()" :disabled="uploadingCosts" class="pill-s">
+        <span x-show="!uploadingCosts">Импорт себест.</span>
         <span x-show="uploadingCosts">Загрузка…</span>
       </button>
       <input type="file" x-ref="costFile" accept=".xlsx" @change="onImportCostsFile($event)" class="hidden">
-      <button @click="debugOffer()" class="btn-s" title="Показать структуру первого оффера">? Debug</button>
-      <button @click="addRow()" class="btn-s">+ SKU</button>
+      <button @click="debugOffer()" class="pill-s" title="Показать структуру первого оффера">Debug оффер</button>
+      <button @click="addRow()" class="pill-s">+ SKU</button>
       <div class="flex-1"></div>
-      <input type="text" x-model="filter" placeholder="Найти SKU или название" class="input w-64 !py-2">
+      <div class="relative">
+        <input type="text" x-model="filter" placeholder="Поиск SKU…" class="pill-s !py-2.5 !pl-5 !pr-4 w-64 !bg-bg2 !border-white/10 focus:!border-grape focus:!bg-bg3">
+      </div>
     </section>
 
-    <!-- ФИЛЬТРЫ -->
-    <section class="card p-4 mb-6 flex flex-wrap items-center gap-6">
-      <label class="flex items-center gap-3 font-bold uppercase text-xs tracking-wider cursor-pointer">
+    <section class="flex flex-wrap items-center gap-6 mb-6">
+      <label class="flex items-center gap-3 cursor-pointer font-medium text-sm text-ink">
         <input type="checkbox" x-model="onlyWithCost" class="cb"> С себестоимостью
       </label>
-      <label class="flex items-center gap-3 font-bold uppercase text-xs tracking-wider cursor-pointer">
-        <input type="checkbox" x-model="onlyInStock" class="cb"> В наличии (FBW·FBO·FBS)
+      <label class="flex items-center gap-3 cursor-pointer font-medium text-sm text-ink">
+        <input type="checkbox" x-model="onlyInStock" class="cb"> В наличии (FBW · FBO · FBS)
       </label>
-      <div class="ml-auto chip bg-marja">
+      <div class="ml-auto chip bg-grape/15 text-grape2">
         <span x-text="filteredResults.length"></span>&nbsp;/&nbsp;<span x-text="results.length"></span>
       </div>
     </section>
 
-    <!-- ТАБЛИЦА -->
-    <section class="card overflow-hidden">
+    <section class="rounded-3xl bg-bg2 p-2 overflow-hidden">
       <div class="overflow-x-auto max-h-[65vh]">
         <table class="w-full text-sm">
-          <thead class="bg-ink text-white text-[10px] font-black uppercase tracking-widest sticky top-0">
-            <tr>
-              <th class="px-3 py-3 text-left w-32 border-r-[3px] border-marja">SKU</th>
-              <th class="px-3 py-3 text-left min-w-[220px] border-r-[3px] border-marja">Название</th>
-              <th class="px-3 py-3 text-left w-40 border-r-[3px] border-marja">Категория</th>
-              <th class="px-3 py-3 text-center w-16 border-r-[3px] border-marja">Модель</th>
-              <th class="px-3 py-3 text-right w-14 border-r-[3px] border-marja">Д</th>
-              <th class="px-3 py-3 text-right w-14 border-r-[3px] border-marja">Ш</th>
-              <th class="px-3 py-3 text-right w-14 border-r-[3px] border-marja">В</th>
-              <th class="px-3 py-3 text-right w-16 border-r-[3px] border-marja">Вес</th>
-              <th class="px-3 py-3 text-right w-24 border-r-[3px] border-marja">Цена</th>
-              <th class="px-3 py-3 text-right w-24 border-r-[3px] border-marja">Себест.</th>
-              <th class="px-3 py-3 text-right w-16 border-r-[3px] border-marja">Остаток</th>
-              <th class="px-3 py-3 text-right w-24 border-r-[3px] border-marja bg-hot text-white">Прибыль</th>
-              <th class="px-3 py-3 text-center w-20 border-r-[3px] border-marja bg-hot text-white">Маржа</th>
-              <th class="px-3 py-3 w-8"></th>
+          <thead class="sticky top-0 bg-bg2 z-10">
+            <tr class="text-[10px] font-bold uppercase tracking-widest text-ink3">
+              <th class="px-4 py-3 text-left w-32">SKU</th>
+              <th class="px-4 py-3 text-left min-w-[220px]">Название</th>
+              <th class="px-3 py-3 text-left w-36">Категория</th>
+              <th class="px-3 py-3 text-center w-16">Модель</th>
+              <th class="px-2 py-3 text-right w-12">Д</th>
+              <th class="px-2 py-3 text-right w-12">Ш</th>
+              <th class="px-2 py-3 text-right w-12">В</th>
+              <th class="px-2 py-3 text-right w-14">Вес</th>
+              <th class="px-3 py-3 text-right w-24">Цена</th>
+              <th class="px-3 py-3 text-right w-24">Себест.</th>
+              <th class="px-3 py-3 text-right w-16">Остаток</th>
+              <th class="px-3 py-3 text-right w-24">Прибыль</th>
+              <th class="px-3 py-3 text-center w-20">Маржа</th>
+              <th class="px-2 py-3 w-8"></th>
             </tr>
           </thead>
-          <tbody>
+          <tbody class="rounded-2xl overflow-hidden bg-bg">
             <template x-for="(row, i) in filteredResults" :key="row.id">
-              <tr :class="i%2===0?'bg-white':'bg-paper'" class="border-b-[2px] border-ink/10 hover:bg-marja/20">
-                <td class="px-2 py-2"><input type="text" x-model="row.sku" @change="saveRow(row)" class="w-full font-mono font-bold"></td>
-                <td class="px-2 py-2"><input type="text" x-model="row.name" @change="saveRow(row)" class="w-full"></td>
-                <td class="px-2 py-2"><select x-model="row.category" @change="saveRow(row)" class="w-full text-[11px]"><template x-for="c in categories"><option :value="c.name" x-text="c.name"></option></template></select></td>
-                <td class="px-2 py-2 text-center"><select x-model="row.model" @change="saveRow(row)" class="text-center font-bold"><option value="FBY">FBY</option><option value="FBS">FBS</option></select></td>
-                <td class="px-1 py-2"><input type="number" x-model.number="row.length_cm" @change="saveRow(row)" class="w-full text-right"></td>
-                <td class="px-1 py-2"><input type="number" x-model.number="row.width_cm" @change="saveRow(row)" class="w-full text-right"></td>
-                <td class="px-1 py-2"><input type="number" x-model.number="row.height_cm" @change="saveRow(row)" class="w-full text-right"></td>
-                <td class="px-1 py-2"><input type="number" step="0.1" x-model.number="row.weight_kg" @change="saveRow(row)" class="w-full text-right"></td>
-                <td class="px-1 py-2"><input type="number" x-model.number="row.price_rub" @change="saveRow(row)" class="w-full text-right font-bold"></td>
-                <td class="px-1 py-2"><input type="number" x-model.number="row.cost_rub" @change="saveRow(row)" class="w-full text-right"></td>
-                <td class="px-1 py-2"><input type="number" x-model.number="row.stock_total" @change="saveRow(row)" :class="(+row.stock_total)>0?'text-good font-black':'opacity-30'" class="w-full text-right"></td>
-                <td class="px-2 py-2 text-right font-black" :class="row.profit_rub<0?'text-bad':'text-ink'" x-text="fmtRub(row.profit_rub)"></td>
-                <td class="px-2 py-2 text-center"><span class="chip" :style="marginBg(row.margin_pct)" x-text="fmtPct(row.margin_pct)"></span></td>
-                <td class="px-1 py-2 text-center"><button @click="deleteRow(row)" class="font-black opacity-30 hover:opacity-100 hover:text-hot">✕</button></td>
+              <tr class="tbl-row border-t border-white/[0.04]">
+                <td class="px-4 py-3"><input type="text" x-model="row.sku" @change="saveRow(row)" class="w-full font-mono font-bold text-grape2"></td>
+                <td class="px-4 py-3"><input type="text" x-model="row.name" @change="saveRow(row)" class="w-full text-ink"></td>
+                <td class="px-3 py-3"><select x-model="row.category" @change="saveRow(row)" class="w-full text-[11px] text-ink"><template x-for="c in categories"><option :value="c.name" x-text="c.name" class="text-bg"></option></template></select></td>
+                <td class="px-2 py-3 text-center"><select x-model="row.model" @change="saveRow(row)" class="text-center font-bold text-ink"><option value="FBY" class="text-bg">FBY</option><option value="FBS" class="text-bg">FBS</option></select></td>
+                <td class="px-1 py-3"><input type="number" x-model.number="row.length_cm" @change="saveRow(row)" class="w-full text-right text-ink"></td>
+                <td class="px-1 py-3"><input type="number" x-model.number="row.width_cm" @change="saveRow(row)" class="w-full text-right text-ink"></td>
+                <td class="px-1 py-3"><input type="number" x-model.number="row.height_cm" @change="saveRow(row)" class="w-full text-right text-ink"></td>
+                <td class="px-1 py-3"><input type="number" step="0.1" x-model.number="row.weight_kg" @change="saveRow(row)" class="w-full text-right text-ink"></td>
+                <td class="px-2 py-3"><input type="number" x-model.number="row.price_rub" @change="saveRow(row)" class="w-full text-right font-bold text-ink"></td>
+                <td class="px-2 py-3"><input type="number" x-model.number="row.cost_rub" @change="saveRow(row)" class="w-full text-right text-ink2"></td>
+                <td class="px-2 py-3"><input type="number" x-model.number="row.stock_total" @change="saveRow(row)" :class="(+row.stock_total)>0?'text-mint font-bold':'text-ink3'" class="w-full text-right"></td>
+                <td class="px-3 py-3 text-right font-bold" :class="row.profit_rub<0?'text-coral':row.margin_pct>=15?'text-mint':row.margin_pct>=5?'text-sun':'text-ink'" x-text="fmtRub(row.profit_rub)"></td>
+                <td class="px-3 py-3 text-center"><span class="chip" :style="marginBg(row.margin_pct)" x-text="fmtPct(row.margin_pct)"></span></td>
+                <td class="px-1 py-3 text-center"><button @click="deleteRow(row)" class="text-ink3 hover:text-coral text-lg leading-none">×</button></td>
               </tr>
             </template>
             <tr x-show="filteredResults.length===0">
-              <td colspan="14" class="px-6 py-16 text-center">
-                <div class="text-2xl font-black uppercase tracking-wider mb-2">— Пусто —</div>
-                <div class="text-xs font-bold uppercase tracking-widest opacity-50">Импортируй из Ya.Market, синхронизируй остатки или добавь SKU</div>
+              <td colspan="14" class="px-6 py-20 text-center">
+                <div class="text-3xl font-extrabold tracking-tight text-ink mb-3">Каталог пуст</div>
+                <div class="text-sm font-medium text-ink2 max-w-md mx-auto">Импортируй SKU из Ya.Market API, синхронизируй остатки или добавь товар вручную</div>
               </td>
             </tr>
           </tbody>
@@ -242,77 +239,75 @@ tailwind.config = {theme:{extend:{
       </div>
     </section>
 
-    <div class="text-center text-[10px] font-bold uppercase tracking-widest opacity-40 mt-6">MARJA · Юнит-экономика для маркетплейсов · v1.0</div>
+    <div class="text-center text-xs font-semibold text-ink3 mt-10">
+      marja · unit-экономика для маркетплейсов · v1.0
+    </div>
   </main>
 </div>
 
-<!-- МОДАЛКА: Настройки -->
-<div x-show="showSettings" class="fixed inset-0 bg-ink/60 flex items-center justify-center z-40 p-4" @click.self="showSettings=false" x-cloak>
-  <div class="card w-full max-w-lg p-6">
-    <div class="flex items-center justify-between mb-4 pb-3 border-b-[3px] border-ink">
-      <h2 class="text-xl font-black uppercase tracking-tight">Настройки магазина</h2>
-      <button @click="showSettings=false" class="w-9 h-9 bg-hot border-[3px] border-ink font-black text-white">✕</button>
+<div x-show="showSettings" class="fixed inset-0 bg-bg/80 backdrop-blur-sm flex items-center justify-center z-40 p-4" @click.self="showSettings=false" x-cloak>
+  <div class="w-full max-w-lg bg-bg2 rounded-3xl p-7 border border-white/10">
+    <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
+      <h2 class="text-2xl font-extrabold tracking-tight text-ink">Настройки магазина</h2>
+      <button @click="showSettings=false" class="w-9 h-9 bg-bg text-ink2 rounded-full font-bold text-lg hover:text-coral">×</button>
     </div>
-    <div class="space-y-3">
+    <div class="space-y-4">
       <div>
-        <label class="text-[10px] font-black uppercase tracking-widest block mb-1">Система налогообложения</label>
-        <select x-model="storeSettings.tax_system" @change="saveSettings('tax_system',storeSettings.tax_system)" class="input"><template x-for="(rate,name) in taxSystems"><option :value="name" x-text="name + ' (' + (rate*100).toFixed(2) + '%)'"></option></template></select>
+        <label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">Система налогообложения</label>
+        <select x-model="storeSettings.tax_system" @change="saveSettings('tax_system',storeSettings.tax_system)" class="input"><template x-for="(rate,name) in taxSystems"><option :value="name" x-text="name + ' (' + (rate*100).toFixed(2) + '%)'" class="text-bg"></option></template></select>
       </div>
       <div>
-        <label class="text-[10px] font-black uppercase tracking-widest block mb-1">Частота выплат (эквайринг)</label>
-        <select x-model="storeSettings.payment_frequency" @change="saveSettings('payment_frequency',storeSettings.payment_frequency)" class="input"><template x-for="(rate,name) in acquiringOptions"><option :value="name" x-text="name + (rate!==null ? ' (' + (rate*100).toFixed(2) + '%)' : '')"></option></template></select>
+        <label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">Частота выплат (эквайринг)</label>
+        <select x-model="storeSettings.payment_frequency" @change="saveSettings('payment_frequency',storeSettings.payment_frequency)" class="input"><template x-for="(rate,name) in acquiringOptions"><option :value="name" x-text="name + (rate!==null ? ' (' + (rate*100).toFixed(2) + '%)' : '')" class="text-bg"></option></template></select>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">Эквайринг, %</label><input type="number" step="0.1" :value="(storeSettings.acquiring_rate*100).toFixed(2)" @change="saveSettings('acquiring_rate',$event.target.value/100)" class="input"></div>
-        <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">ДРР, %</label><input type="number" step="0.5" :value="(storeSettings.default_drr_pct*100).toFixed(2)" @change="saveSettings('default_drr_pct',$event.target.value/100)" class="input"></div>
-        <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">% возвратов</label><input type="number" step="0.5" :value="(storeSettings.return_pct*100).toFixed(2)" @change="saveSettings('return_pct',$event.target.value/100)" class="input"></div>
-        <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">Возврат, ₽</label><input type="number" :value="storeSettings.return_cost_rub" @change="saveSettings('return_cost_rub',+$event.target.value)" class="input"></div>
+        <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">Эквайринг, %</label><input type="number" step="0.1" :value="(storeSettings.acquiring_rate*100).toFixed(2)" @change="saveSettings('acquiring_rate',$event.target.value/100)" class="input"></div>
+        <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">ДРР, %</label><input type="number" step="0.5" :value="(storeSettings.default_drr_pct*100).toFixed(2)" @change="saveSettings('default_drr_pct',$event.target.value/100)" class="input"></div>
+        <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">% возвратов</label><input type="number" step="0.5" :value="(storeSettings.return_pct*100).toFixed(2)" @change="saveSettings('return_pct',$event.target.value/100)" class="input"></div>
+        <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">Возврат, ₽</label><input type="number" :value="storeSettings.return_cost_rub" @change="saveSettings('return_cost_rub',+$event.target.value)" class="input"></div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- МОДАЛКА: API -->
-<div x-show="showYaMarket" class="fixed inset-0 bg-ink/60 flex items-center justify-center z-40 p-4" @click.self="showYaMarket=false" x-cloak>
-  <div class="card w-full max-w-lg p-6">
-    <div class="flex items-center justify-between mb-4 pb-3 border-b-[3px] border-ink">
-      <h2 class="text-xl font-black uppercase tracking-tight">Ya.Market API</h2>
-      <button @click="showYaMarket=false" class="w-9 h-9 bg-hot border-[3px] border-ink font-black text-white">✕</button>
+<div x-show="showYaMarket" class="fixed inset-0 bg-bg/80 backdrop-blur-sm flex items-center justify-center z-40 p-4" @click.self="showYaMarket=false" x-cloak>
+  <div class="w-full max-w-lg bg-bg2 rounded-3xl p-7 border border-white/10">
+    <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
+      <h2 class="text-2xl font-extrabold tracking-tight text-ink">Ya.Market API</h2>
+      <button @click="showYaMarket=false" class="w-9 h-9 bg-bg text-ink2 rounded-full font-bold text-lg hover:text-coral">×</button>
     </div>
-    <template x-if="mpAccounts.length>0"><div class="mb-4 space-y-2"><div class="text-[10px] font-black uppercase tracking-widest opacity-60">Подключено:</div><template x-for="a in mpAccounts"><div class="flex items-center justify-between bg-marja border-[3px] border-ink px-3 py-2"><div class="text-xs font-bold"><span x-text="a.label||'Без метки'"></span> · biz <span x-text="a.business_id"></span></div><button @click="deleteMpAccount(a.id)" class="w-7 h-7 bg-ink text-marja font-black">✕</button></div></template></div></template>
+    <template x-if="mpAccounts.length>0"><div class="mb-4 space-y-2"><div class="text-[11px] font-bold uppercase tracking-widest text-ink3">Подключено:</div><template x-for="a in mpAccounts"><div class="flex items-center justify-between bg-grape/12 border border-grape/30 rounded-2xl px-4 py-3"><div class="text-sm font-semibold text-ink"><span x-text="a.label||'Без метки'"></span> · biz <span class="text-grape2" x-text="a.business_id"></span></div><button @click="deleteMpAccount(a.id)" class="w-7 h-7 bg-bg text-ink2 rounded-full font-bold hover:text-coral">×</button></div></template></div></template>
     <div class="space-y-3">
       <div>
-        <label class="text-[10px] font-black uppercase tracking-widest block mb-1">Api-Key</label>
+        <label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">Api-Key</label>
         <input type="text" x-model="mpForm.api_token" class="input font-mono" placeholder="ACMA:xxxxx:xxxxx">
-        <div class="text-[10px] font-bold mt-1 opacity-70">Получить: <a href="https://partner.market.yandex.ru/" target="_blank" class="underline">кабинет партнёра</a> → Настройки API</div>
+        <div class="text-[11px] font-medium text-ink3 mt-1.5">Получить: <a href="https://partner.market.yandex.ru/" target="_blank" class="text-grape2 underline">кабинет партнёра</a> → Настройки API</div>
       </div>
       <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">business_id</label><input type="number" x-model.number="mpForm.business_id" class="input"></div>
-        <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">campaign_id</label><input type="number" x-model.number="mpForm.campaign_id" class="input"></div>
+        <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">business_id</label><input type="number" x-model.number="mpForm.business_id" class="input"></div>
+        <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">campaign_id</label><input type="number" x-model.number="mpForm.campaign_id" class="input"></div>
       </div>
-      <div><label class="text-[10px] font-black uppercase tracking-widest block mb-1">Метка</label><input type="text" x-model="mpForm.label" class="input" placeholder="Основной кабинет"></div>
-      <button @click="saveMpAccount()" class="btn-p w-full justify-center py-3">⚡ Подключить</button>
+      <div><label class="text-[11px] font-bold uppercase tracking-widest text-ink3 block mb-1.5">Метка</label><input type="text" x-model="mpForm.label" class="input" placeholder="Основной кабинет"></div>
+      <button @click="saveMpAccount()" class="w-full bg-grape text-white font-bold py-3.5 rounded-full hover:bg-grape/90 transition mt-2">Подключить</button>
     </div>
   </div>
 </div>
 
-<!-- МОДАЛКА: новый магазин -->
-<div x-show="showNewWs" class="fixed inset-0 bg-ink/60 flex items-center justify-center z-40 p-4" @click.self="showNewWs=false" x-cloak>
-  <div class="card w-full max-w-md p-6">
-    <div class="flex items-center justify-between mb-4 pb-3 border-b-[3px] border-ink">
-      <h2 class="text-xl font-black uppercase tracking-tight">Новый магазин</h2>
-      <button @click="showNewWs=false" class="w-9 h-9 bg-hot border-[3px] border-ink font-black text-white">✕</button>
+<div x-show="showNewWs" class="fixed inset-0 bg-bg/80 backdrop-blur-sm flex items-center justify-center z-40 p-4" @click.self="showNewWs=false" x-cloak>
+  <div class="w-full max-w-md bg-bg2 rounded-3xl p-7 border border-white/10">
+    <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
+      <h2 class="text-2xl font-extrabold tracking-tight text-ink">Новый магазин</h2>
+      <button @click="showNewWs=false" class="w-9 h-9 bg-bg text-ink2 rounded-full font-bold text-lg hover:text-coral">×</button>
     </div>
-    <input type="text" x-model="newWsName" class="input mb-3" placeholder="Название магазина">
-    <button @click="createWorkspace()" class="btn-p w-full justify-center py-3">⚡ Создать</button>
+    <input type="text" x-model="newWsName" class="input mb-4" placeholder="Название магазина">
+    <button @click="createWorkspace()" class="w-full bg-grape text-white font-bold py-3.5 rounded-full hover:bg-grape/90 transition">Создать</button>
   </div>
 </div>
 
-<!-- TOAST -->
-<div x-show="toast.text" class="fixed bottom-6 right-6 bg-ink text-marja border-[3px] border-marja px-5 py-3 z-50 shadow-nb-hot" x-cloak>
-  <div class="text-xs font-black uppercase tracking-widest" x-text="toast.text"></div>
+<div x-show="toast.text" class="fixed bottom-6 right-6 bg-grape text-white px-5 py-3.5 rounded-full font-semibold text-sm shadow-2xl z-50" x-cloak>
+  <div x-text="toast.text"></div>
 </div>
 
-<script src="/static/app.js?v=5"></script>
+<script src="/static/app.js?v=6"></script>
 </body>
 </html>
