@@ -12,7 +12,13 @@ class Settings(BaseSettings):
 
     # App
     app_name: str = "YM Unit Economy"
+    app_url: str = "https://www.marja.app"
     debug: bool = False
+
+    # Email (Resend)
+    resend_api_key: str = ""
+    email_from: str = "MARJA <noreply@marja.app>"
+    password_reset_expire_minutes: int = 60
 
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
