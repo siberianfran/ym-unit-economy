@@ -81,19 +81,53 @@ tailwind.config = {theme:{extend:{
       <p class="text-white/70 font-medium">Ya.Market · WB · Ozon — юнит-экономика и финотчёт в одном сервисе</p>
     </div>
     <div class="bg-bg2/70 backdrop-blur rounded-3xl p-6 border border-white/10">
-      <div class="flex gap-1 p-1 rounded-full bg-bg mb-5">
-        <button @click="authMode='login'" :class="authMode==='login'?'bg-grape text-white':'text-ink2'" class="flex-1 py-2 rounded-full font-semibold text-sm transition">Вход</button>
-        <button @click="authMode='register'" :class="authMode==='register'?'bg-grape text-white':'text-ink2'" class="flex-1 py-2 rounded-full font-semibold text-sm transition">Регистрация</button>
+      <div x-show="authMode==='login' || authMode==='register'" class="flex gap-1 p-1 rounded-full bg-bg mb-5">
+        <button @click="authMode='login'; authError=''; authInfo=''" :class="authMode==='login'?'bg-grape text-white':'text-ink2'" class="flex-1 py-2 rounded-full font-semibold text-sm transition">Вход</button>
+        <button @click="authMode='register'; authError=''; authInfo=''" :class="authMode==='register'?'bg-grape text-white':'text-ink2'" class="flex-1 py-2 rounded-full font-semibold text-sm transition">Регистрация</button>
       </div>
+
+      <div x-show="authMode==='forgot'" class="mb-5">
+        <div class="text-lg font-extrabold tracking-tight text-ink mb-1">Восстановление пароля</div>
+        <div class="text-xs text-ink2 font-medium">Введи email — пришлём ссылку для сброса</div>
+      </div>
+
+      <div x-show="authMode==='reset'" class="mb-5">
+        <div class="text-lg font-extrabold tracking-tight text-ink mb-1">Новый пароль</div>
+        <div class="text-xs text-ink2 font-medium">Задай пароль от 8 символов</div>
+      </div>
+
       <div class="space-y-3">
-        <input type="email" x-model="authForm.email" class="input" placeholder="you@example.com">
-        <input type="password" x-model="authForm.password" class="input" placeholder="Пароль от 8 символов">
+        <template x-if="authMode==='login' || authMode==='register' || authMode==='forgot'">
+          <input type="email" x-model="authForm.email" class="input" placeholder="you@example.com">
+        </template>
+        <template x-if="authMode==='login' || authMode==='register' || authMode==='reset'">
+          <input type="password" x-model="authForm.password" class="input" placeholder="Пароль от 8 символов">
+        </template>
+        <template x-if="authMode==='reset'">
+          <input type="password" x-model="resetPassword2" class="input" placeholder="Повтори пароль">
+        </template>
         <template x-if="authMode==='register'"><input type="text" x-model="authForm.name" class="input" placeholder="Ваше имя"></template>
         <template x-if="authMode==='register'"><input type="text" x-model="authForm.workspace_name" class="input" placeholder="Название магазина"></template>
+
         <div x-show="authError" class="rounded-2xl bg-coral/15 border border-coral/40 px-4 py-3 text-sm text-coral font-medium" x-text="authError"></div>
-        <button @click="doAuth()" class="w-full bg-white text-bg font-bold py-3.5 rounded-full hover:bg-grape2 transition">
-          <span x-text="authMode==='login' ? 'Войти' : 'Создать аккаунт'"></span>
-        </button>
+        <div x-show="authInfo" class="rounded-2xl bg-mint/15 border border-mint/40 px-4 py-3 text-sm text-mint font-medium" x-text="authInfo"></div>
+
+        <template x-if="authMode==='login' || authMode==='register'">
+          <button @click="doAuth()" class="w-full bg-white text-bg font-bold py-3.5 rounded-full hover:bg-grape2 transition">
+            <span x-text="authMode==='login' ? 'Войти' : 'Создать аккаунт'"></span>
+          </button>
+        </template>
+        <template x-if="authMode==='forgot'">
+          <button @click="doForgotPassword()" class="w-full bg-white text-bg font-bold py-3.5 rounded-full hover:bg-grape2 transition">Отправить ссылку</button>
+        </template>
+        <template x-if="authMode==='reset'">
+          <button @click="doResetPassword()" class="w-full bg-white text-bg font-bold py-3.5 rounded-full hover:bg-grape2 transition">Задать пароль</button>
+        </template>
+
+        <div class="text-center pt-1">
+          <button x-show="authMode==='login'" @click="authMode='forgot'; authError=''; authInfo=''" class="text-xs text-ink2 font-medium hover:text-grape2 transition">Забыли пароль?</button>
+          <button x-show="authMode==='forgot' || authMode==='reset'" @click="authMode='login'; authError=''; authInfo=''" class="text-xs text-ink2 font-medium hover:text-grape2 transition">← Вернуться ко входу</button>
+        </div>
       </div>
     </div>
   </div>
@@ -525,34 +559,4 @@ tailwind.config = {theme:{extend:{
     <div class="space-y-3">
       <div>
         <label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">Api-Key</label>
-        <input type="text" x-model="mpForm.api_token" class="input font-mono" placeholder="ACMA:xxxxx:xxxxx">
-        <div class="text-[11px] font-medium text-ink3 mt-1.5">Получить: <a href="https://partner.market.yandex.ru/" target="_blank" class="text-grape2 underline">кабинет партнёра</a> → Настройки API</div>
-      </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">business_id</label><input type="number" x-model.number="mpForm.business_id" class="input"></div>
-        <div><label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">campaign_id</label><input type="number" x-model.number="mpForm.campaign_id" class="input"></div>
-      </div>
-      <div><label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">Метка</label><input type="text" x-model="mpForm.label" class="input" placeholder="Основной кабинет"></div>
-      <button @click="saveMpAccount()" class="w-full bg-grape text-white font-bold py-3.5 rounded-full hover:bg-grape/90 transition mt-2">Подключить</button>
-    </div>
-  </div>
-</div>
-
-<div x-show="showNewWs" class="fixed inset-0 bg-bg/80 backdrop-blur-sm flex items-center justify-center z-40 p-4" @click.self="showNewWs=false" x-cloak>
-  <div class="w-full max-w-md bg-bg2 rounded-3xl p-7 border border-white/10">
-    <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
-      <h2 class="text-2xl font-extrabold tracking-tight text-ink">Новый магазин</h2>
-      <button @click="showNewWs=false" class="w-9 h-9 bg-bg text-ink2 rounded-full font-bold text-lg hover:text-coral">×</button>
-    </div>
-    <input type="text" x-model="newWsName" class="input mb-4" placeholder="Название магазина">
-    <button @click="createWorkspace()" class="w-full bg-grape text-white font-bold py-3.5 rounded-full hover:bg-grape/90 transition">Создать</button>
-  </div>
-</div>
-
-<div x-show="toast.text" class="fixed bottom-6 right-6 bg-grape text-white px-5 py-3.5 rounded-full font-semibold text-sm shadow-2xl z-50" x-cloak>
-  <div x-text="toast.text"></div>
-</div>
-
-<script src="/static/app.js?v=11"></script>
-</body>
-</html>
+  
