@@ -129,12 +129,10 @@ tailwind.config = {theme:{extend:{
         <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.05] mb-4">
           <span x-show="activeTab==='catalog'">Юнит-экономика<br>в реальном времени.</span>
           <span x-show="activeTab==='fin'">Финансовый отчёт<br>по каждой неделе.</span>
-          <span x-show="activeTab==='ozon'">Ozon: юнит-экономика<br>и P&amp;L по SKU.</span>
         </h1>
         <p class="text-white/70 font-medium text-lg">
           <span x-show="activeTab==='catalog'">Импортируешь из API — сразу видишь прибыль по каждому SKU</span>
           <span x-show="activeTab==='fin'">Данные напрямую из Ya.Market · себестоимость из юнитки · P&amp;L по неделям</span>
-          <span x-show="activeTab==='ozon'">628 категорий Ozon · FBO / FBS / realFBS · отчёты и Seller API</span>
         </p>
       </div>
 
@@ -145,14 +143,13 @@ tailwind.config = {theme:{extend:{
         <button @click="activeTab='fin'; if(!fin.report) loadFinReports()"
                 :class="activeTab==='fin'?'bg-white text-bg':'bg-white/10 text-white border border-white/20'"
                 class="px-6 py-2.5 rounded-full text-sm font-bold transition">Финотчёт</button>
-        <button @click="activeTab='ozon'; loadOzonCategories()"
-                :class="activeTab==='ozon'?'bg-white text-bg':'bg-white/10 text-white border border-white/20'"
-                class="px-6 py-2.5 rounded-full text-sm font-bold transition">Ozon</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div class="rounded-3xl p-6 cursor-pointer transition-all" style="background:#FFCC00" @click="currentMp='ya_market'">
-          <div class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:#3D2E00">активен</div>
+        <div class="rounded-3xl p-6 cursor-pointer transition-all" style="background:#FFCC00"
+             :style="currentMp==='ya_market' ? 'background:#FFCC00' : 'background:#FFCC00;opacity:.55'"
+             @click="switchMp('ya_market')">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1" style="color:#3D2E00" x-text="currentMp==='ya_market'?'выбран':'активен'"></div>
           <div class="text-2xl font-extrabold tracking-tight" style="color:#000">Я.Маркет</div>
           <div class="text-sm font-bold mt-1" style="color:#3D2E00"><span x-text="results.length"></span> SKU</div>
         </div>
@@ -162,8 +159,9 @@ tailwind.config = {theme:{extend:{
           <div class="text-sm font-bold mt-1 text-white/70">август 2026</div>
         </div>
         <div class="rounded-3xl p-6 cursor-pointer transition-all" style="background:#005BFF"
-             @click="currentMp='ozon'; activeTab='ozon'; loadOzonCategories()">
-          <div class="text-[10px] font-black uppercase tracking-widest mb-1 text-white/80">активен</div>
+             :style="currentMp==='ozon' ? 'background:#005BFF' : 'background:#005BFF;opacity:.55'"
+             @click="switchMp('ozon')">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1 text-white/80" x-text="currentMp==='ozon'?'выбран':'активен'"></div>
           <div class="text-2xl font-extrabold tracking-tight text-white">Ozon</div>
           <div class="text-sm font-bold mt-1 text-white/80" x-text="ozon.catalogInfo || 'юнит-экономика + P&L'"></div>
         </div>
@@ -173,7 +171,7 @@ tailwind.config = {theme:{extend:{
 
   <main class="max-w-[1600px] mx-auto px-6 py-10">
 
-    <div x-show="activeTab==='catalog'">
+    <div x-show="activeTab==='catalog' && currentMp==='ya_market'">
       <section class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-8">
         <div class="rounded-3xl p-5 bg-bg2">
           <div class="text-xs font-semibold text-ink2 mb-2">Всего SKU</div>
@@ -289,7 +287,7 @@ tailwind.config = {theme:{extend:{
       </section>
     </div>
 
-    <div x-show="activeTab==='fin'">
+    <div x-show="activeTab==='fin' && currentMp==='ya_market'">
       <section class="rounded-3xl bg-bg2 p-6 mb-6">
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
           <div>
@@ -494,8 +492,8 @@ tailwind.config = {theme:{extend:{
       </div>
     </div>
 
-    <!-- ================= OZON ================= -->
-    <div x-show="activeTab==='ozon'">
+    <!-- ============ OZON · юнит-экономика ============ -->
+    <div x-show="activeTab==='catalog' && currentMp==='ozon'">
       <section class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
 
         <!-- Калькулятор -->
@@ -577,7 +575,10 @@ tailwind.config = {theme:{extend:{
         </div>
       </section>
 
-      <!-- Фин. отчёт Ozon -->
+    </div>
+
+    <!-- ============ OZON · финотчёт ============ -->
+    <div x-show="activeTab==='fin' && currentMp==='ozon'">
       <section class="rounded-3xl bg-bg2 p-6">
         <div class="text-lg font-extrabold tracking-tight text-ink mb-1">Финансовый отчёт Ozon</div>
         <div class="text-xs text-ink2 font-medium mb-4">Отчёт «Начисления» + файл цен (себестоимость) → P&amp;L по SKU. Или real-time через Seller API.</div>
@@ -658,20 +659,51 @@ tailwind.config = {theme:{extend:{
 <div x-show="showYaMarket" class="fixed inset-0 bg-bg/80 backdrop-blur-sm flex items-center justify-center z-40 p-4" @click.self="showYaMarket=false" x-cloak>
   <div class="w-full max-w-lg bg-bg2 rounded-3xl p-7 border border-white/10">
     <div class="flex items-center justify-between mb-5 pb-4 border-b border-white/10">
-      <h2 class="text-2xl font-extrabold tracking-tight text-ink">Ya.Market API</h2>
+      <h2 class="text-2xl font-extrabold tracking-tight text-ink" x-text="mpMeta().title"></h2>
       <button @click="showYaMarket=false" class="w-9 h-9 bg-bg text-ink2 rounded-full font-bold text-lg hover:text-coral">×</button>
     </div>
-    <template x-if="mpAccounts.length>0"><div class="mb-4 space-y-2"><div class="text-[11px] font-bold uppercase tracking-widest text-grape2">Подключено:</div><template x-for="a in mpAccounts"><div class="flex items-center justify-between bg-grape/12 border border-grape/30 rounded-2xl px-4 py-3"><div class="text-sm font-semibold text-ink"><span x-text="a.label||'Без метки'"></span> · biz <span class="text-grape2" x-text="a.business_id"></span></div><button @click="deleteMpAccount(a.id)" class="w-7 h-7 bg-bg text-ink2 rounded-full font-bold hover:text-coral">×</button></div></template></div></template>
+
+    <div class="flex gap-2 mb-5">
+      <template x-for="mp in [{id:'ya_market',name:'Я.Маркет'},{id:'ozon',name:'Ozon'}]" :key="mp.id">
+        <button @click="switchMp(mp.id)"
+                :class="currentMp===mp.id?'bg-grape text-white':'bg-bg text-ink2 border border-white/10'"
+                class="px-4 py-2 rounded-full text-xs font-bold transition" x-text="mp.name"></button>
+      </template>
+    </div>
+
+    <template x-if="mpAccountsCurrent().length>0">
+      <div class="mb-4 space-y-2">
+        <div class="text-[11px] font-bold uppercase tracking-widest text-grape2">Подключено:</div>
+        <template x-for="a in mpAccountsCurrent()" :key="a.id">
+          <div class="flex items-center justify-between bg-grape/12 border border-grape/30 rounded-2xl px-4 py-3">
+            <div class="text-sm font-semibold text-ink">
+              <span x-text="a.label||'Без метки'"></span> ·
+              <span x-text="mpMeta().idLabel"></span> <span class="text-grape2" x-text="a.business_id"></span>
+            </div>
+            <button @click="deleteMpAccount(a.id)" class="w-7 h-7 bg-bg text-ink2 rounded-full font-bold hover:text-coral">×</button>
+          </div>
+        </template>
+      </div>
+    </template>
+
     <div class="space-y-3">
       <div>
-        <label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">Api-Key</label>
-        <input type="text" x-model="mpForm.api_token" class="input font-mono" placeholder="ACMA:xxxxx:xxxxx">
-        <div class="text-[11px] font-medium text-ink3 mt-1.5">Получить: <a href="https://partner.market.yandex.ru/" target="_blank" class="text-grape2 underline">кабинет партнёра</a> → Настройки API</div>
+        <label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5" x-text="mpMeta().keyLabel"></label>
+        <input type="text" x-model="mpForm.api_token" class="input font-mono" :placeholder="mpMeta().keyPlaceholder">
+        <div class="text-[11px] font-medium text-ink3 mt-1.5">Получить: <a :href="mpMeta().docsUrl" target="_blank" class="text-grape2 underline" x-text="mpMeta().docsText"></a> <span x-text="mpMeta().docsPath"></span></div>
       </div>
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">business_id</label><input type="number" x-model.number="mpForm.business_id" class="input"></div>
-        <div><label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">campaign_id</label><input type="number" x-model.number="mpForm.campaign_id" class="input"></div>
+
+      <div class="grid gap-3" :class="currentMp==='ya_market' ? 'grid-cols-2' : 'grid-cols-1'">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5" x-text="mpMeta().idLabel"></label>
+          <input type="number" x-model.number="mpForm.business_id" class="input" :placeholder="mpMeta().idPlaceholder">
+        </div>
+        <div x-show="currentMp==='ya_market'">
+          <label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">campaign_id</label>
+          <input type="number" x-model.number="mpForm.campaign_id" class="input">
+        </div>
       </div>
+
       <div><label class="text-[11px] font-bold uppercase tracking-widest text-grape2 block mb-1.5">Метка</label><input type="text" x-model="mpForm.label" class="input" placeholder="Основной кабинет"></div>
       <button @click="saveMpAccount()" class="w-full bg-grape text-white font-bold py-3.5 rounded-full hover:bg-grape/90 transition mt-2">Подключить</button>
     </div>
@@ -693,6 +725,6 @@ tailwind.config = {theme:{extend:{
   <div x-text="toast.text"></div>
 </div>
 
-<script src="/static/app.js?v=14"></script>
+<script src="/static/app.js?v=15"></script>
 </body>
 </html>

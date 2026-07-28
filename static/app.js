@@ -366,15 +366,53 @@ function app() {
     },
 
     // ============ Marketplace Account ============
+    // ---- метаданные площадки для модалки подключения ----
+    mpMeta() {
+      if (this.currentMp === 'ozon') {
+        return {
+          title: 'Ozon Seller API',
+          keyLabel: 'Api-Key',
+          keyPlaceholder: 'xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx',
+          idLabel: 'Client-Id',
+          idPlaceholder: '123456',
+          docsUrl: 'https://seller.ozon.ru/app/settings/api-keys',
+          docsText: 'личный кабинет Ozon',
+          docsPath: '→ Настройки → API-ключи',
+        };
+      }
+      return {
+        title: 'Ya.Market API',
+        keyLabel: 'Api-Key',
+        keyPlaceholder: 'ACMA:xxxxx:xxxxx',
+        idLabel: 'business_id',
+        idPlaceholder: '',
+        docsUrl: 'https://partner.market.yandex.ru/',
+        docsText: 'кабинет партнёра',
+        docsPath: '→ Настройки API',
+      };
+    },
+
+    mpAccountsCurrent() {
+      return (this.mpAccounts || []).filter(a => (a.marketplace || 'ya_market') === this.currentMp);
+    },
+
+    // ---- переключение площадки: экраны одинаковые, данные свои ----
+    async switchMp(mp) {
+      this.currentMp = mp;
+      this.mpForm = {api_token:'', business_id:null, campaign_id:null, label:''};
+      if (mp === 'ozon') await this.loadOzonCategories();
+    },
+
     async saveMpAccount() {
-      if (!this.mpForm.api_token) { this.showToast('Введи токен'); return; }
+      if (!this.mpForm.api_token) { this.showToast('Введи ключ API'); return; }
+      if (this.currentMp === 'ozon' && !this.mpForm.business_id) { this.showToast('Введи Client-Id'); return; }
       try {
         await this.api('POST', `/api/workspaces/${this.currentWs}/marketplace-accounts`, {
-          marketplace: 'ya_market', ...this.mpForm,
+          marketplace: this.currentMp, ...this.mpForm,
         });
         this.mpForm = {api_token:'', business_id:null, campaign_id:null, label:''};
         this.mpAccounts = await this.api('GET', `/api/workspaces/${this.currentWs}/marketplace-accounts`);
-        this.showToast('Ya.Market API подключён');
+        this.showToast(this.mpMeta().title + ' подключён');
       } catch(e) { this.showToast('Ошибка: ' + e.message); }
     },
 
@@ -388,7 +426,7 @@ function app() {
 
     // ============ Ya.Market ============
     async importFromYaMarket() {
-      if (this.mpAccounts.length === 0) { this.showYaMarket = true; return; }
+      if (this.mpAccountsCurrent().length === 0) { this.showYaMarket = true; return; }
       this.importing = true;
       try {
         const r = await this.api('POST', `/api/workspaces/${this.currentWs}/ya-market/import-offers`);
