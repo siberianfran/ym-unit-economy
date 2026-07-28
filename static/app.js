@@ -49,7 +49,16 @@ function app() {
     toast: {text:''},
 
     // ---- UI: вкладки ----
-    activeTab: 'catalog',  // catalog | fin
+    activeTab: 'catalog',  // catalog | fin | ozon
+
+    // ---- Ozon ----
+    ozon: {
+      cats: [], types: [],
+      form: {category:'', product_type:'', price_rub:15000, cost_rub:6000,
+             length_cm:0, width_cm:0, height_cm:0, weight_kg:0, drr_pct:10},
+      result: null, calcing: false, pnl: null,
+      importing: false, syncing: false, catalogInfo: '',
+    },
 
     // ---- Финотчёт ----
     fin: {
@@ -217,6 +226,89 @@ function app() {
         await this.recalc();
         await this.loadFinReports();
       } catch(e) { this.showToast('Ошибка загрузки: ' + e.message); }
+    },
+
+    // ============ Ozon ============
+    ozonBase() { return `/api/workspaces/${this.currentWs}/ozon`; },
+
+    async loadOzonCategories() {
+      if (!this.currentWs || this.ozon.cats.length) return;
+      try {
+        const r = await this.api('GET', `${this.ozonBase()}/categories`);
+        this.ozon.cats = r.categories || [];
+        this.ozon.catalogInfo = `${r.count} категорий Ozon`;
+        if (!this.ozon.form.category && this.ozon.cats.length) {
+          this.ozon.form.category = this.ozon.cats[0];
+          await this.loadOzonTypes();
+        }
+      } catch(e) { this.showToast('Ozon: ' + e.message); }
+    },
+
+    async loadOzonTypes() {
+      const c = this.ozon.form.category;
+      if (!c) return;
+      try {
+        const r = await this.api('GET', `${this.ozonBase()}/category-types?category=` + encodeURIComponent(c));
+        this.ozon.types = r.types || [];
+        this.ozon.form.product_type = this.ozon.types[0] || '';
+      } catch(e) { this.ozon.types = []; }
+    },
+
+    async ozonCalc() {
+      this.ozon.calcing = true;
+      try {
+        const f = this.ozon.form;
+        this.ozon.result = await this.api('POST', `${this.ozonBase()}/calc`, {
+          category: f.category, product_type: f.product_type || null,
+          price_rub: +f.price_rub, cost_rub: +f.cost_rub,
+          length_cm: +f.length_cm, width_cm: +f.width_cm,
+          height_cm: +f.height_cm, weight_kg: +f.weight_kg,
+          drr_pct: (+f.drr_pct) / 100,
+        });
+      } catch(e) { this.showToast('Ozon: ' + e.message); }
+      finally { this.ozon.calcing = false; }
+    },
+
+    async ozonImportReport(ev) {
+      const files = ev.target.files;
+      if (!files || !files.length) return;
+      const fd = new FormData();
+      fd.append('report', files[0]);
+      const costInput = document.getElementById('ozonCostFile');
+      if (costInput && costInput.files.length) fd.append('cost', costInput.files[0]);
+      this.ozon.importing = true;
+      try {
+        this.ozon.pnl = await this.apiUpload(`${this.ozonBase()}/import-report`, fd);
+        this.showToast('Отчёт Ozon загружен');
+      } catch(e) { this.showToast('Ozon: ' + e.message); }
+      finally { this.ozon.importing = false; ev.target.value = ''; }
+    },
+
+    async ozonImportCatalog(ev) {
+      const f = ev.target.files[0];
+      if (!f) return;
+      const fd = new FormData(); fd.append('file', f);
+      try {
+        const r = await this.apiUpload(`${this.ozonBase()}/import-commission-catalog`, fd);
+        this.ozon.catalogInfo = `Каталог обновлён: ${r.categories} категорий, ${r.types} типов`;
+        this.ozon.cats = []; await this.loadOzonCategories();
+        this.showToast('Каталог комиссий Ozon обновлён');
+      } catch(e) { this.showToast('Ozon: ' + e.message); }
+      finally { ev.target.value = ''; }
+    },
+
+    async ozonSync() {
+      this.ozon.syncing = true;
+      try {
+        const to = new Date(), from = new Date(Date.now() - 30*864e5);
+        const r = await this.api('POST', `${this.ozonBase()}/sync`, {
+          date_from: from.toISOString().slice(0,10) + 'T00:00:00.000Z',
+          date_to: to.toISOString().slice(0,10) + 'T23:59:59.000Z',
+        });
+        this.ozon.pnl = {sku_total: r.sku_count, grand_total_rub: r.grand_total_rub, live: true};
+        this.showToast(`Ozon API: ${r.sku_count} SKU`);
+      } catch(e) { this.showToast('Ozon API: ' + e.message); }
+      finally { this.ozon.syncing = false; }
     },
 
     // ============ Settings ============

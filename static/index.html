@@ -129,10 +129,12 @@ tailwind.config = {theme:{extend:{
         <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight text-white leading-[1.05] mb-4">
           <span x-show="activeTab==='catalog'">Юнит-экономика<br>в реальном времени.</span>
           <span x-show="activeTab==='fin'">Финансовый отчёт<br>по каждой неделе.</span>
+          <span x-show="activeTab==='ozon'">Ozon: юнит-экономика<br>и P&amp;L по SKU.</span>
         </h1>
         <p class="text-white/70 font-medium text-lg">
           <span x-show="activeTab==='catalog'">Импортируешь из API — сразу видишь прибыль по каждому SKU</span>
           <span x-show="activeTab==='fin'">Данные напрямую из Ya.Market · себестоимость из юнитки · P&amp;L по неделям</span>
+          <span x-show="activeTab==='ozon'">628 категорий Ozon · FBO / FBS / realFBS · отчёты и Seller API</span>
         </p>
       </div>
 
@@ -143,6 +145,9 @@ tailwind.config = {theme:{extend:{
         <button @click="activeTab='fin'; if(!fin.report) loadFinReports()"
                 :class="activeTab==='fin'?'bg-white text-bg':'bg-white/10 text-white border border-white/20'"
                 class="px-6 py-2.5 rounded-full text-sm font-bold transition">Финотчёт</button>
+        <button @click="activeTab='ozon'; loadOzonCategories()"
+                :class="activeTab==='ozon'?'bg-white text-bg':'bg-white/10 text-white border border-white/20'"
+                class="px-6 py-2.5 rounded-full text-sm font-bold transition">Ozon</button>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -156,10 +161,11 @@ tailwind.config = {theme:{extend:{
           <div class="text-2xl font-extrabold tracking-tight text-white">Wildberries</div>
           <div class="text-sm font-bold mt-1 text-white/70">август 2026</div>
         </div>
-        <div class="rounded-3xl p-6 opacity-80" style="background:#005BFF">
-          <div class="text-[10px] font-black uppercase tracking-widest mb-1 text-white/70">скоро</div>
+        <div class="rounded-3xl p-6 cursor-pointer transition-all" style="background:#005BFF"
+             @click="currentMp='ozon'; activeTab='ozon'; loadOzonCategories()">
+          <div class="text-[10px] font-black uppercase tracking-widest mb-1 text-white/80">активен</div>
           <div class="text-2xl font-extrabold tracking-tight text-white">Ozon</div>
-          <div class="text-sm font-bold mt-1 text-white/70">сентябрь 2026</div>
+          <div class="text-sm font-bold mt-1 text-white/80" x-text="ozon.catalogInfo || 'юнит-экономика + P&L'"></div>
         </div>
       </div>
     </div>
@@ -486,6 +492,138 @@ tailwind.config = {theme:{extend:{
       <div x-show="fin.report && fin.report.error" class="mt-4 rounded-2xl bg-coral/15 border border-coral/40 px-5 py-4 text-sm text-coral font-medium">
         <span x-text="fin.report.error"></span>
       </div>
+    </div>
+
+    <!-- ================= OZON ================= -->
+    <div x-show="activeTab==='ozon'">
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+
+        <!-- Калькулятор -->
+        <div class="rounded-3xl bg-bg2 p-6">
+          <div class="text-lg font-extrabold tracking-tight text-ink mb-1">Калькулятор Ozon</div>
+          <div class="text-xs text-ink2 font-medium mb-4" x-text="ozon.catalogInfo || 'загрузка категорий…'"></div>
+
+          <label class="text-xs font-bold text-ink2">Категория</label>
+          <select x-model="ozon.form.category" @change="loadOzonTypes()"
+                  class="w-full mt-1 mb-3 px-3 py-2 rounded-xl bg-bg text-ink text-sm font-medium border border-white/10">
+            <template x-for="c in ozon.cats" :key="c"><option :value="c" x-text="c"></option></template>
+          </select>
+
+          <label class="text-xs font-bold text-ink2">Тип товара</label>
+          <select x-model="ozon.form.product_type"
+                  class="w-full mt-1 mb-3 px-3 py-2 rounded-xl bg-bg text-ink text-sm font-medium border border-white/10">
+            <template x-for="t in ozon.types" :key="t"><option :value="t" x-text="t"></option></template>
+          </select>
+
+          <div class="grid grid-cols-2 gap-3 mb-3">
+            <div><label class="text-xs font-bold text-ink2">Цена, ₽</label>
+              <input type="number" x-model.number="ozon.form.price_rub" class="w-full mt-1 px-3 py-2 rounded-xl bg-bg text-ink text-sm font-medium border border-white/10"></div>
+            <div><label class="text-xs font-bold text-ink2">Себестоимость, ₽</label>
+              <input type="number" x-model.number="ozon.form.cost_rub" class="w-full mt-1 px-3 py-2 rounded-xl bg-bg text-ink text-sm font-medium border border-white/10"></div>
+          </div>
+
+          <div class="grid grid-cols-4 gap-2 mb-3">
+            <div><label class="text-xs font-bold text-ink2">Д, см</label><input type="number" x-model.number="ozon.form.length_cm" class="w-full mt-1 px-2 py-2 rounded-xl bg-bg text-ink text-sm border border-white/10"></div>
+            <div><label class="text-xs font-bold text-ink2">Ш, см</label><input type="number" x-model.number="ozon.form.width_cm" class="w-full mt-1 px-2 py-2 rounded-xl bg-bg text-ink text-sm border border-white/10"></div>
+            <div><label class="text-xs font-bold text-ink2">В, см</label><input type="number" x-model.number="ozon.form.height_cm" class="w-full mt-1 px-2 py-2 rounded-xl bg-bg text-ink text-sm border border-white/10"></div>
+            <div><label class="text-xs font-bold text-ink2">Вес, кг</label><input type="number" x-model.number="ozon.form.weight_kg" class="w-full mt-1 px-2 py-2 rounded-xl bg-bg text-ink text-sm border border-white/10"></div>
+          </div>
+
+          <div class="mb-4"><label class="text-xs font-bold text-ink2">ДРР, %</label>
+            <input type="number" x-model.number="ozon.form.drr_pct" class="w-full mt-1 px-3 py-2 rounded-xl bg-bg text-ink text-sm font-medium border border-white/10"></div>
+
+          <button @click="ozonCalc()" class="pill pill-p w-full">
+            <span x-show="!ozon.calcing">Рассчитать</span><span x-show="ozon.calcing">Считаю…</span>
+          </button>
+        </div>
+
+        <!-- Результат по схемам -->
+        <div class="rounded-3xl bg-bg2 p-6 lg:col-span-2">
+          <div class="text-lg font-extrabold tracking-tight text-ink mb-4">Юнит-экономика по схемам</div>
+
+          <div x-show="!ozon.result" class="text-sm text-ink2 font-medium">Заполни параметры товара и нажми «Рассчитать».</div>
+
+          <div x-show="ozon.result" class="grid grid-cols-3 gap-3 mb-5">
+            <template x-for="sc in ['FBO','FBS','realFBS']" :key="sc">
+              <div class="rounded-2xl p-4 text-center border"
+                   :class="ozon.result && ozon.result.best_scheme===sc ? 'border-mint bg-mint/10' : 'border-white/10 bg-bg'">
+                <div class="text-[10px] font-black uppercase tracking-widest text-ink2 mb-1">
+                  <span x-text="sc"></span><span x-show="ozon.result && ozon.result.best_scheme===sc"> ★</span>
+                </div>
+                <div class="text-3xl font-extrabold tracking-tight"
+                     :class="ozon.result.by_scheme[sc].margin_pct>=15?'text-mint2':(ozon.result.by_scheme[sc].margin_pct>=5?'text-sun2':'text-coral')"
+                     x-text="ozon.result.by_scheme[sc].margin_pct + '%'"></div>
+                <div class="text-sm font-bold text-ink mt-1" x-text="Math.round(ozon.result.by_scheme[sc].profit_rub).toLocaleString('ru-RU') + ' ₽'"></div>
+                <div class="text-[11px] text-ink2 font-medium mt-1">комиссия <span x-text="(ozon.result.by_scheme[sc].commission_pct*100).toFixed(1)+'%'"></span></div>
+              </div>
+            </template>
+          </div>
+
+          <table x-show="ozon.result" class="w-full fin-tbl text-sm">
+            <thead><tr class="text-ink2 text-xs font-bold">
+              <th class="text-left py-2">Статья</th><th class="py-2">FBO</th><th class="py-2">FBS</th><th class="py-2">realFBS</th>
+            </tr></thead>
+            <tbody>
+              <template x-for="row in [['commission_rub','Комиссия'],['logistics_rub','Логистика'],['acquiring_rub','Эквайринг'],['marketing_rub','Маркетинг'],['returns_reserve_rub','Возвраты'],['tax_rub','Налог'],['cost_rub','Себестоимость'],['total_expenses_rub','Итого расходов'],['profit_rub','Прибыль']]" :key="row[0]">
+                <tr class="border-t border-white/5">
+                  <td class="text-left py-2 text-ink2 font-medium" x-text="row[1]"></td>
+                  <template x-for="sc in ['FBO','FBS','realFBS']" :key="sc">
+                    <td class="py-2 text-ink font-semibold" x-text="Math.round(ozon.result.by_scheme[sc][row[0]]).toLocaleString('ru-RU')"></td>
+                  </template>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Фин. отчёт Ozon -->
+      <section class="rounded-3xl bg-bg2 p-6">
+        <div class="text-lg font-extrabold tracking-tight text-ink mb-1">Финансовый отчёт Ozon</div>
+        <div class="text-xs text-ink2 font-medium mb-4">Отчёт «Начисления» + файл цен (себестоимость) → P&amp;L по SKU. Или real-time через Seller API.</div>
+
+        <div class="flex flex-wrap items-center gap-3 mb-5">
+          <label class="pill-s cursor-pointer" style="color:#EDE9FE">
+            <span x-show="!ozon.importing">↑ Отчёт «Начисления»</span><span x-show="ozon.importing">Загрузка…</span>
+            <input type="file" accept=".xlsx" class="hidden" @change="ozonImportReport($event)">
+          </label>
+          <label class="pill-s cursor-pointer" style="color:#EDE9FE">
+            Файл цен (себест.)
+            <input id="ozonCostFile" type="file" accept=".xlsx" class="hidden">
+          </label>
+          <button @click="ozonSync()" class="pill-s" style="color:#EDE9FE">
+            <span x-show="!ozon.syncing">⟳ Синк по Ozon API</span><span x-show="ozon.syncing">Синхронизация…</span>
+          </button>
+          <label class="pill-s cursor-pointer" style="color:#EDE9FE">
+            Каталог комиссий Ozon
+            <input type="file" accept=".xlsx" class="hidden" @change="ozonImportCatalog($event)">
+          </label>
+        </div>
+
+        <div x-show="ozon.pnl" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div class="rounded-2xl bg-bg p-5" x-show="ozon.pnl && ozon.pnl.gross">
+            <div class="text-[10px] font-black uppercase tracking-widest text-ink3 mb-1">Выручка</div>
+            <div class="text-2xl font-extrabold tracking-tight text-ink" x-text="Math.round(ozon.pnl.gross||0).toLocaleString('ru-RU')"></div>
+          </div>
+          <div class="rounded-2xl bg-bg p-5" x-show="ozon.pnl && ozon.pnl.contrib_matched">
+            <div class="text-[10px] font-black uppercase tracking-widest text-ink3 mb-1">Вклад до COGS</div>
+            <div class="text-2xl font-extrabold tracking-tight text-ink" x-text="Math.round(ozon.pnl.contrib_matched||0).toLocaleString('ru-RU')"></div>
+          </div>
+          <div class="rounded-2xl bg-bg p-5" x-show="ozon.pnl && ozon.pnl.cogs_matched">
+            <div class="text-[10px] font-black uppercase tracking-widest text-ink3 mb-1">Себестоимость</div>
+            <div class="text-2xl font-extrabold tracking-tight text-ink" x-text="Math.round(ozon.pnl.cogs_matched||0).toLocaleString('ru-RU')"></div>
+          </div>
+          <div class="rounded-2xl bg-bg p-5" x-show="ozon.pnl && ozon.pnl.net_matched!==undefined">
+            <div class="text-[10px] font-black uppercase tracking-widest text-ink3 mb-1">Чистая прибыль</div>
+            <div class="text-2xl font-extrabold tracking-tight" :class="(ozon.pnl.net_matched||0)>=0?'text-mint2':'text-coral'" x-text="Math.round(ozon.pnl.net_matched||0).toLocaleString('ru-RU')"></div>
+          </div>
+          <div class="rounded-2xl bg-bg p-5">
+            <div class="text-[10px] font-black uppercase tracking-widest text-ink3 mb-1">SKU</div>
+            <div class="text-2xl font-extrabold tracking-tight text-ink" x-text="ozon.pnl.sku_total || ozon.pnl.sku_count || 0"></div>
+          </div>
+        </div>
+        <div x-show="!ozon.pnl" class="text-sm text-ink2 font-medium">Загрузи отчёт Ozon или синхронизируйся по API.</div>
+      </section>
     </div>
 
     <div class="text-center text-xs font-semibold text-ink3 mt-10">marja · unit-экономика и финотчёт · v1.1</div>
