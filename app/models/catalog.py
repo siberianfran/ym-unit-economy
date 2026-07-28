@@ -32,6 +32,11 @@ class StoreSettings(Base):
     return_pct: Mapped[float] = mapped_column(Float, default=0.05)
     return_cost_rub: Mapped[float] = mapped_column(Float, default=200)
     default_drr_pct: Mapped[float] = mapped_column(Float, default=0.10)
+    # Ozon-специфика (per-workspace)
+    ozon_commission_override: Mapped[float | None] = mapped_column(Float, nullable=True)
+    ozon_nonlocal_pct: Mapped[float] = mapped_column(Float, default=0.0)
+    ozon_realfbs_carrier_rub: Mapped[float] = mapped_column(Float, default=250)
+    ozon_fbs_processing_mode: Mapped[str] = mapped_column(String(16), default="sc_trust")
     updated_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now(), onupdate=func.now())
 
 
